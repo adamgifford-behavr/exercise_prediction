@@ -9,15 +9,19 @@ repos:
     - id: check-added-large-files
     - id: check-executables-have-shebangs
     - id: check-json
-    # - id: pretty-format-json
+      files: '^((?!environment.yaml).)*$'
+    - id: pretty-format-json
+      files: '^((?!environment.yaml).)*$'
     - id: check-toml
     - id: check-yaml
+      files: '^((?!environment.yaml).)*$'
     - id: debug-statements
     - id: detect-aws-credentials
     - id: detect-private-key
-    - id: requirements-txt-fixer
-    - id: sort-simple-yaml
-    - id: no-commit-to-branch
+    # - id: requirements-txt-fixer
+    # - id: sort-simple-yaml
+    #   files: '^((?!environment.yaml).)*$'
+    # - id: no-commit-to-branch
     # - id: name-tests-test
     # - id: check-shebang-scripts-are-executable
 - repo: https://github.com/pycqa/isort
@@ -55,12 +59,12 @@ repos:
         language: python
         language_version: python3
         types: [python]
--   repo: local
-    hooks:
-      - id: check-environment
-        name: check-environment
-        language: system
-        entry: bash ./check-environment.sh
+# -   repo: local
+#     hooks:
+#       - id: check-environment
+#         name: check-environment
+#         language: system
+#         entry: bash ./check-environment.sh
 # - repo: local
 #   hooks:
 #     - id: pytest-check
