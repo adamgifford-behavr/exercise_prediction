@@ -13,6 +13,7 @@
 
 import os
 import sys
+from typing import Dict, List
 
 _ = os.getenv("FOO")
 _ = getattr(sys, "last_value", None)
@@ -31,7 +32,7 @@ if (_ is None) or _ == "":
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = []
+extensions: List[str] = []
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -174,7 +175,7 @@ HTMLHELP_BASENAME = "exercise_predictiondoc"
 
 # -- Options for LaTeX output --------------------------------------------------
 
-latex_elements = {
+latex_elements: Dict[str, str] = {
     # The paper size ('letterpaper' or 'a4paper').
     # 'papersize': 'letterpaper',
     # The font size ('10pt', '11pt' or '12pt').
@@ -250,6 +251,7 @@ texinfo_documents = [
         "Miscellaneous",
     ),
 ]
+print("foo")
 
 # Documents to append as an appendix to all manuals.
 # texinfo_appendices = []

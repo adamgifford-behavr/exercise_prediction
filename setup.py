@@ -9,3 +9,4 @@ setup(
     author="Adam Gifford",
     license="MIT",
 )
+print("foo")
