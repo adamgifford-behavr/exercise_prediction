@@ -1,2 +1,5 @@
 [tool.pylint.'MESSAGES CONTROL']
 max-line-length = 12880
+
+[tool.pylint.BASIC]
+good-names = ["ix", "jx", "kx", "_", "df", "i", "j", "k", "n"]
