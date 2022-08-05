@@ -2,7 +2,6 @@
  "cells": [
   {
    "cell_type": "markdown",
-   "id": "94bff901",
    "metadata": {},
    "source": [
     "# 0.1-agifford-TestLoadMatFileAndVerify\n",
@@ -11,8 +10,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 1,
-   "id": "75f830b5",
+   "execution_count": null,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -24,7 +22,6 @@
   },
   {
    "cell_type": "markdown",
-   "id": "cb43af67",
    "metadata": {},
    "source": [
     "Multi file is best for the \"when are you exercising\" problem (segmentation)"
@@ -32,8 +29,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 2,
-   "id": "4fdd0092",
+   "execution_count": null,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -43,7 +39,6 @@
   },
   {
    "cell_type": "markdown",
-   "id": "58a85b07",
    "metadata": {},
    "source": [
     "All the data exists in `subject_data`<br>\n",
@@ -53,28 +48,15 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 3,
-   "id": "85c91472",
+   "execution_count": null,
    "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/plain": [
-       "dict_keys(['__header__', '__version__', '__globals__', 'subject_data', 'exerciseConstants', 'Fs'])"
-      ]
-     },
-     "execution_count": 3,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
+   "outputs": [],
    "source": [
     "mat_contents.keys()"
    ]
   },
   {
    "cell_type": "markdown",
-   "id": "e765275d",
    "metadata": {},
    "source": [
     "Within `exerciseConstants`, there are 2 fields<br>\n",
@@ -84,29 +66,9 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 4,
-   "id": "0dd32150",
+   "execution_count": null,
    "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/plain": [
-       "(array(['<Initial Activity>', 'Arm Band Adjustment', 'Arm straight up',\n",
-       "        'Band Pull-Down Row', 'Bicep Curl', 'Biceps Curl (band)',\n",
-       "        'Box Jump (on bench)', 'Burpee', 'Butterfly Sit-up',\n",
-       "        'Chest Press (rack)'], dtype=object),\n",
-       " array(['Junk',\n",
-       "        array(['Arm Band Adjustment', 'Arm straight up', 'Unlisted Exercise',\n",
-       "               'Note', 'Tap IMU Device', 'Tap Left Device', 'Tap Right Device',\n",
-       "               '<Initial Activity>', 'Activities', 'Invalid'], dtype=object)   ],\n",
-       "       dtype=object))"
-      ]
-     },
-     "execution_count": 4,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
+   "outputs": [],
    "source": [
     "exercise_constants = mat_contents[\"exerciseConstants\"]\n",
     "exercise_constants.activities[:10], exercise_constants.usefulActivityGroupings[0,:]"
@@ -114,7 +76,6 @@
   },
   {
    "cell_type": "markdown",
-   "id": "90f96425",
    "metadata": {},
    "source": [
     "There are 94 subject's worth of data"
@@ -122,21 +83,9 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 5,
-   "id": "b2ba3305",
+   "execution_count": null,
    "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/plain": [
-       "(94,)"
-      ]
-     },
-     "execution_count": 5,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
+   "outputs": [],
    "source": [
     "# how many subjects are there?\n",
     "mat_contents['subject_data'].shape"
@@ -144,7 +93,6 @@
   },
   {
    "cell_type": "markdown",
-   "id": "b4e5e5ff",
    "metadata": {},
    "source": [
     " Within each subject, there are one or more arrays of `scipy.io.matlab._mio5_params.mat_struct`s"
@@ -152,31 +100,9 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 6,
-   "id": "29bb852d",
+   "execution_count": null,
    "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "[<scipy.io.matlab._mio5_params.mat_struct object at 0x000002D35FE872B0>\n",
-      " <scipy.io.matlab._mio5_params.mat_struct object at 0x000002D35FEBE6E0>\n",
-      " <scipy.io.matlab._mio5_params.mat_struct object at 0x000002D35FEBF670>\n",
-      " <scipy.io.matlab._mio5_params.mat_struct object at 0x000002D35FEBFEE0>\n",
-      " <scipy.io.matlab._mio5_params.mat_struct object at 0x000002D35FEBFFD0>]\n",
-      "<scipy.io.matlab._mio5_params.mat_struct object at 0x000002D361A84DC0>\n",
-      "<scipy.io.matlab._mio5_params.mat_struct object at 0x000002D361A855A0>\n",
-      "<scipy.io.matlab._mio5_params.mat_struct object at 0x000002D361A85570>\n",
-      "<scipy.io.matlab._mio5_params.mat_struct object at 0x000002D361A86620>\n",
-      "<scipy.io.matlab._mio5_params.mat_struct object at 0x000002D361A86680>\n",
-      "[<scipy.io.matlab._mio5_params.mat_struct object at 0x000002D361A874C0>\n",
-      " <scipy.io.matlab._mio5_params.mat_struct object at 0x000002D361A87C70>\n",
-      " <scipy.io.matlab._mio5_params.mat_struct object at 0x000002D361A87CA0>\n",
-      " <scipy.io.matlab._mio5_params.mat_struct object at 0x000002D361AF4C70>]\n"
-     ]
-    }
-   ],
+   "outputs": [],
    "source": [
     "# what's in each subjects data structure?\n",
     "for ix, subj_data in enumerate(mat_contents['subject_data']):\n",
@@ -187,7 +113,6 @@
   },
   {
    "cell_type": "markdown",
-   "id": "34af522e",
    "metadata": {},
    "source": [
     "Looks like all `scipy.io.matlab._mio5_params.mat_struct` data has identical fieldnames, so we only need to gather the field names once."
@@ -195,8 +120,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 19,
-   "id": "0bc5f09d",
+   "execution_count": null,
    "metadata": {},
    "outputs": [
     {
@@ -259,7 +183,6 @@
   },
   {
    "cell_type": "markdown",
-   "id": "d6f76c69",
    "metadata": {},
    "source": [
     "Each array reflects a separate workout instance, with a varying number of activities"
@@ -267,8 +190,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 20,
-   "id": "0883c990",
+   "execution_count": null,
    "metadata": {},
    "outputs": [
     {
@@ -324,7 +246,6 @@
   },
   {
    "cell_type": "markdown",
-   "id": "923a616c",
    "metadata": {},
    "source": [
     "For subjects with more than one data array, it appears that `activityIndex` and `activityName` are all identical, so we only need to look at these fields once."
@@ -332,8 +253,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 21,
-   "id": "b2028b28",
+   "execution_count": null,
    "metadata": {},
    "outputs": [
     {
@@ -360,7 +280,6 @@
   },
   {
    "cell_type": "markdown",
-   "id": "947b41ed",
    "metadata": {},
    "source": [
     "Moreover, all `activityIndex`s and `activityName`s are identical across all subjects and arrays. Considering how generic these are, they can be ignored entirely."
@@ -368,8 +287,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 22,
-   "id": "0fc59923",
+   "execution_count": null,
    "metadata": {},
    "outputs": [
     {
@@ -400,7 +318,6 @@
   },
   {
    "cell_type": "markdown",
-   "id": "234d920b",
    "metadata": {},
    "source": [
     "It appears that `masterFileToken` and `masterToken` reflect the same values within a subject, regardless of how many data arrays (i.e., number of separate workout instances) a subject completed. So for each subject, we only need to look at the first `masterToken`."
@@ -408,8 +325,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 23,
-   "id": "3f8e0495",
+   "execution_count": null,
    "metadata": {},
    "outputs": [
     {
@@ -440,7 +356,6 @@
   },
   {
    "cell_type": "markdown",
-   "id": "663a0ddd",
    "metadata": {},
    "source": [
     "Moreover, it appears that all data comes from subjects' right arms, so we can ignore this field entirely as well."
@@ -448,8 +363,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 24,
-   "id": "ced2184e",
+   "execution_count": null,
    "metadata": {},
    "outputs": [
     {
@@ -475,7 +389,6 @@
   },
   {
    "cell_type": "markdown",
-   "id": "668f9f0c",
    "metadata": {},
    "source": [
     "Finally, for subjects with an array of data, all `instanceIndex`s are identical, so we can ignore these as well."
@@ -483,8 +396,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 25,
-   "id": "02bc2dca",
+   "execution_count": null,
    "metadata": {},
    "outputs": [
     {
@@ -511,7 +423,6 @@
   },
   {
    "cell_type": "markdown",
-   "id": "e36e0462",
    "metadata": {},
    "source": [
     "This code snippet below runs through one array from one subject's data and aligns the activity labels with the time axis of the accelerometer data"
@@ -519,8 +430,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 26,
-   "id": "6b8aa1c5",
+   "execution_count": null,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -543,7 +453,6 @@
   },
   {
    "cell_type": "markdown",
-   "id": "40eb90b6",
    "metadata": {},
    "source": [
     "Let's just check that the time axis for the accelerometer is the same as that for the gyroscope"
@@ -551,8 +460,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 27,
-   "id": "84ca00d0",
+   "execution_count": null,
    "metadata": {},
    "outputs": [
     {
@@ -571,7 +479,6 @@
   },
   {
    "cell_type": "markdown",
-   "id": "cd8da859",
    "metadata": {},
    "source": [
     "Finally, we want to put subject data into a dataframe format and then save it as a parquet or csv file for further exploration. Files will reflect one data array for one subject, and file names will be of the form: `fileID_subjID_dataID` where `fileID` is the value in the `fileIndex` field, `subjID` is the value in the `subjectID` field, and `dataID` is the data array index representing the exercise run (0 by default for subjects with only one data structure)."
@@ -579,8 +486,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 28,
-   "id": "276fd573",
+   "execution_count": null,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -633,8 +539,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 29,
-   "id": "1aaf7cb1",
+   "execution_count": null,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -648,8 +553,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 30,
-   "id": "935b7918",
+   "execution_count": null,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -698,8 +602,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 31,
-   "id": "f3e4b35f",
+   "execution_count": null,
    "metadata": {},
    "outputs": [
     {
@@ -723,7 +626,6 @@
   },
   {
    "cell_type": "markdown",
-   "id": "efc585b3",
    "metadata": {},
    "source": [
     "Pyarrow breaks the kernel and I don't know why, but fastparquet works..."
@@ -731,22 +633,9 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 32,
-   "id": "2cfa92e7",
+   "execution_count": null,
    "metadata": {},
-   "outputs": [
-    {
-     "ename": "AssertionError",
-     "evalue": "",
-     "output_type": "error",
-     "traceback": [
-      "\u001b[1;31m---------------------------------------------------------------------------\u001b[0m",
-      "\u001b[1;31mAssertionError\u001b[0m                            Traceback (most recent call last)",
-      "\u001b[1;32mc:\\Users\\adamgifford_behavr.DESKTOP-PQU0D8M\\Documents\\DataScience\\PersonalProjects\\exercise_prediction\\notebooks\\0-setup\\0.1-agifford-TestLoadMatFileAndVerify.ipynb Cell 37\u001b[0m in \u001b[0;36m<cell line: 1>\u001b[1;34m()\u001b[0m\n\u001b[1;32m----> <a href='vscode-notebook-cell:/c%3A/Users/adamgifford_behavr.DESKTOP-PQU0D8M/Documents/DataScience/PersonalProjects/exercise_prediction/notebooks/0-setup/0.1-agifford-TestLoadMatFileAndVerify.ipynb#X51sZmlsZQ%3D%3D?line=0'>1</a>\u001b[0m \u001b[39massert\u001b[39;00m \u001b[39mFalse\u001b[39;00m\n",
-      "\u001b[1;31mAssertionError\u001b[0m: "
-     ]
-    }
-   ],
+   "outputs": [],
    "source": [
     "assert False"
    ]
@@ -754,7 +643,6 @@
   {
    "cell_type": "code",
    "execution_count": null,
-   "id": "7d74d422",
    "metadata": {},
    "outputs": [],
    "source": [
@@ -791,5 +679,5 @@
   }
  },
  "nbformat": 4,
- "nbformat_minor": 5
+ "nbformat_minor": 2
 }
