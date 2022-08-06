@@ -12,18 +12,18 @@ repos:
     - id: check-added-large-files
     - id: check-executables-have-shebangs
     - id: check-json
-      files: '^((?!environment.yaml).)*$'
+      files: '^((?!environment_windows.yaml).)*$'
     - id: pretty-format-json
-      files: '^((?!environment.yaml).)*$'
+      files: '^((?!environment_windows.yaml).)*$'
     - id: check-toml
     - id: check-yaml
-      files: '^((?!environment.yaml).)*$'
+      files: '^((?!environment_windows.yaml).)*$'
     - id: debug-statements
-    - id: detect-aws-credentials
+    # - id: detect-aws-credentials
     - id: detect-private-key
     # - id: requirements-txt-fixer
     # - id: sort-simple-yaml
-    #   files: '^((?!environment.yaml).)*$'
+    #   files: '^((?!environment_windows.yaml).)*$'
     # - id: no-commit-to-branch
     # - id: name-tests-test
     # - id: check-shebang-scripts-are-executable
