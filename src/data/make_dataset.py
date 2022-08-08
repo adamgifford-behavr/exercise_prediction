@@ -8,6 +8,7 @@ Args:
     input_filepath: The path to the input file.
     output_filepath: The path to the output file.
 """
+import json
 import logging
 from pathlib import Path
 from typing import Optional, Union
@@ -15,8 +16,10 @@ from typing import Optional, Union
 import click
 import numpy as np
 import pandas as pd
-import scipy.io as sio
 from dotenv import find_dotenv, load_dotenv
+from scipy import io as sio
+
+ACTIVITY_GROUPS_FILE = Path("../../src/data/activity_groupings.json")
 
 
 def _load_matfile(file: str) -> dict:
@@ -65,9 +68,27 @@ def _align_activities(
     return activity_array
 
 
+def _reverse_dict(activity_groupings: dict) -> dict:
+    """
+    It takes a dictionary of activity groupings and returns a dictionary of activities to
+    groupings
+
+    Args:
+      activity_groupings (dict): a dictionary of activity groupings. The keys are the names
+      of the groups, and the values are lists of activity indices
+
+    Returns:
+      A dictionary with the activities as the keys and the activity groups as the values.
+    """
+    groupings_activities = {
+        val_ix: key for key, val in activity_groupings.items() for val_ix in val
+    }
+    return groupings_activities
+
+
 def _write_single_parquet_file(
     interim_filepath: Union[str, Path],
-    subj_data: sio.matlab._mio5_params.mat_struct,
+    subj_data: sio.matlab.mio5_params.mat_struct,
     data_id: int,
 ) -> None:
     """
@@ -76,7 +97,7 @@ def _write_single_parquet_file(
 
     Args:
       interim_filepath (str): full interim file path to save the parquet file
-      subj_data (sio.matlab._mio5_params.mat_struct): subject's mat_struct data
+      subj_data (sio.matlab.mio5_params.mat_struct): subject's mat_struct data
       data_id (int): data index for subject (0 by default if only one data vector for a user)
     """
 
@@ -101,7 +122,30 @@ def _write_single_parquet_file(
     activity_array = _align_activities(subj_data.activityStartMatrix, time)
     df["label"] = activity_array
 
+    with open(ACTIVITY_GROUPS_FILE, "r", encoding="utf-8") as infile:
+        activity_groupings = json.load(infile)
+
+    # want to reverse relationship between keys and values for easy lookup by activity
+    groupings_actvitiy = _reverse_dict(activity_groupings)
+    df["label_group"] = df["label"].apply(
+        lambda activity: groupings_actvitiy.get(activity, None)
+    )
+
     df.to_parquet(interim_filepath, engine="fastparquet")
+
+
+def _write_activity_groupings_json(useful_activity_groupings: np.ndarray) -> None:
+    """
+    It takes the useful activity groupings data and writes them to a JSON file
+
+    Args:
+    usefulActivityGroupings (np.ndarray): a 2D numpy array of the form:
+        `array([group_name, array([labels for this group]]))`
+    """
+    activity_groupings = {row[0]: row[1].tolist() for row in useful_activity_groupings}
+
+    with open(ACTIVITY_GROUPS_FILE, "w", encoding="utf-8") as outfile:
+        json.dump(activity_groupings, outfile)
 
 
 def write_single_parquet_file_wrapper(
@@ -149,7 +193,14 @@ def multi_convert_mat_to_parquet(
       interim_path (str): the path to the interim folder
       overwrite: boolean, whether to overwrite existing files
     """
+    logger = logging.getLogger(__name__)
+
     mat_contents = _load_matfile(input_filepath)
+    if ~ACTIVITY_GROUPS_FILE.exists():
+        logger.info("activity groupings file does not exist. writing file first...")
+        _write_activity_groupings_json(
+            mat_contents["exerciseConstants"].usefulActivityGroupings
+        )
 
     # loop over contents to re-write the data by file_id, subject_id, and data_id
     for subj_data in mat_contents["subject_data"]:
@@ -230,6 +281,10 @@ def main(
 
     logger = logging.getLogger(__name__)
     logger.info("making final data set from raw data")
+
+    if overwrite_interim:
+        logger.info("function will overwrite existing interim data")
+
     if "multi" in input_filepath:
         logger.info("converting multi-acivity .mat file to PARQUET format")
         logger.info("Loading %s", input_filepath)
@@ -239,7 +294,8 @@ def main(
 
     logger.info("conversion to PARQUET complete")
     logger.info("creating preprocessed dataset from PARQUET files")
-    print(overwrite_output)
+    if overwrite_output:
+        logger.info("function will overwrite existing preprocessed data")
 
 
 if __name__ == "__main__":

@@ -14,6 +14,7 @@ repos:
     - id: check-json
       files: '^((?!environment_windows.yaml).)*$'
     - id: pretty-format-json
+      args: ["--autofix"]
       files: '^((?!environment_windows.yaml).)*$'
     - id: check-toml
     - id: check-yaml

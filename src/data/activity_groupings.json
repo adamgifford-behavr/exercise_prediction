@@ -1,0 +1,137 @@
+{
+  "Ambiguous exercise": [
+    "Bird Dog",
+    "Repetitive Stretching",
+    "Static stretch",
+    "Static Stretch (at your own pace)",
+    "Dip",
+    "Dynamic Stretch (at your own pace)"
+  ],
+  "Ambiguous labeling": [
+    "Dumbbell Row (knee on bench) (label spans both arms)",
+    "Overhead Triceps Extension (label spans both arms)",
+    "Triceps Kickback (knee on bench) (label spans both arms)",
+    "Lawnmower (label spans both arms)"
+  ],
+  "Junk": [
+    "Arm Band Adjustment",
+    "Arm straight up",
+    "Unlisted Exercise",
+    "Note",
+    "Tap IMU Device",
+    "Tap Left Device",
+    "Tap Right Device",
+    "<Initial Activity>",
+    "Activities",
+    "Invalid"
+  ],
+  "Legacy activity": [
+    "Cycling",
+    "Jumping Jacks",
+    "Pushups",
+    "Running",
+    "Shoulder Press",
+    "Situps",
+    "Squats",
+    "Walking",
+    "Burpee",
+    "Curls",
+    "Lunges",
+    "Lunges with Curls",
+    "Straight-Arm Front Fly",
+    "Straight-Arm Shoulder Fly",
+    "Chest Press",
+    "Chest Fly",
+    "Bird Dog"
+  ],
+  "Legacy inactivity": [],
+  "Machines": [
+    "Elliptical machine",
+    "Rowing machine",
+    "Running"
+  ],
+  "Non-exercise": [
+    "Non-Exercise",
+    "Device on Table",
+    "Rest"
+  ],
+  "Opposite-hand repetitive exercise": [
+    "Dumbbell Row (knee on bench) (left arm)",
+    "Triceps Kickback (knee on bench) (left arm)",
+    "Lawnmower (left arm)",
+    "Triceps extension (lying down) (left arm)"
+  ],
+  "Repetitive exercise": [
+    "Pushups",
+    "Shoulder Press",
+    "Situps",
+    "Squats",
+    "Burpee",
+    "Bicep Curl",
+    "Box Jump (on bench)",
+    "Dumbbell Deadlift Row",
+    "Dumbbell Row (knee on bench) (right arm)",
+    "Jumping Jacks",
+    "Medicine Ball Slam",
+    "Pushup (knee or foot variation)",
+    "Russian Twist",
+    "Shoulder Press (dumbbell)",
+    "Sit-up (hands positioned behind head)",
+    "Sit-ups",
+    "Squat",
+    "Squat (arms in front of body, parallel to ground)",
+    "Squat Jump",
+    "Triceps Kickback (knee on bench) (right arm)",
+    "Two-arm Dumbbell Curl (both arms, not alternating)",
+    "V-up",
+    "Wall Ball",
+    "Chest Fly",
+    "Chest Press",
+    "Curls",
+    "Overhead Triceps Extension",
+    "Straight-Arm Front Fly",
+    "Straight-Arm Shoulder Fly",
+    "Crunch",
+    "Dumbbell Squat (hands at side)",
+    "Fast Alternating Punches",
+    "Jump Rope",
+    "Kettlebell Swing",
+    "Lateral Raise",
+    "Seated Back Fly",
+    "Squat Rack Shoulder Press",
+    "Butterfly Sit-up",
+    "Band Pull-Down Row",
+    "Biceps Curl (band)",
+    "Chest Press (rack)",
+    "Lawnmower (right arm)",
+    "Squat (hands behind head)",
+    "Squat (kettlebell / goblet)",
+    "Triceps extension (lying down)",
+    "Triceps extension (lying down) (right arm)",
+    "Alternating Dumbbell Curl"
+  ],
+  "Repetitive non-arm exercise": [
+    "Lunge (alternating both legs, weight optional)",
+    "Alternating Dumbbell Curl",
+    "Walking lunge",
+    "Lunges",
+    "Lunges with Curls"
+  ],
+  "Static exercise": [
+    "Plank",
+    "Power Boat pose",
+    "Side Plank Left side",
+    "Side Plank Right side",
+    "Wall Squat"
+  ],
+  "Walk": [
+    "Walking",
+    "Walk"
+  ],
+  "Walk and run": [
+    "Walking",
+    "Walk",
+    "Running",
+    "Running (treadmill)"
+  ]
+}
