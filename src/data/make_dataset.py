@@ -19,7 +19,7 @@ import pandas as pd
 from dotenv import find_dotenv, load_dotenv
 from scipy import io as sio
 
-ACTIVITY_GROUPS_FILE = Path("../../src/data/activity_groupings.json")
+ACTIVITY_GROUPS_FILE = Path(__file__).parent / "activity_groupings.json"
 
 
 def _load_matfile(file: str) -> dict:
@@ -88,7 +88,7 @@ def _reverse_dict(activity_groupings: dict) -> dict:
 
 def _write_single_parquet_file(
     interim_filepath: Union[str, Path],
-    subj_data: sio.matlab.mio5_params.mat_struct,
+    subj_data: sio.matlab.mat_struct,
     data_id: int,
 ) -> None:
     """
@@ -196,7 +196,7 @@ def multi_convert_mat_to_parquet(
     logger = logging.getLogger(__name__)
 
     mat_contents = _load_matfile(input_filepath)
-    if ~ACTIVITY_GROUPS_FILE.exists():
+    if not ACTIVITY_GROUPS_FILE.exists():
         logger.info("activity groupings file does not exist. writing file first...")
         _write_activity_groupings_json(
             mat_contents["exerciseConstants"].usefulActivityGroupings
