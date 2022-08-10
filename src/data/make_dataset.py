@@ -439,7 +439,7 @@ def make_train_val_dataset(
     "--test-n-single",
     type=int,
     default=13,
-    show_default=True,  # pylint: disable=too-many-arguments
+    show_default=True,
     help=(
         "Number of subjects in test set that only have 1 data file recording. "
         "Required only if 'train-val_test.json' doesn't exist."
@@ -467,6 +467,7 @@ def main(
     test_n_single: Optional[int] = 13,
     test_n_double: Optional[int] = 6,
 ) -> None:
+    # pylint: disable=too-many-arguments
     """
     Runs data processing scripts to turn raw data from (../raw) into
     cleaned data ready to be analyzed (saved in ../interim/preprocessed). It requires
