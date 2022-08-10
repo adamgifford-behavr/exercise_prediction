@@ -1,0 +1,10 @@
+{
+  "_comment": "The only required parameters to include in this file are `desired_val_subjs` and `desired_val_files`. The rest have defaults in `make_dataset.py`",
+  "desired_val_files": 20,
+  "desired_val_subjs": 15,
+  "n_2_files": 1,
+  "n_3_files": 1,
+  "n_4_files": 1,
+  "n_5_files": 0,
+  "n_files_tol": 1
+}
