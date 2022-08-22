@@ -1,0 +1,9 @@
+{
+  "n_fft": 151,
+  "spectrum_decibel": false,
+  "spectrum_frequencies": "naive",
+  "spectrum_method": "fft",
+  "spectrum_normalized": true,
+  "table_name": "naive_frequency_features",
+  "window": "hanning"
+}

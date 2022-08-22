@@ -1,12 +1,23 @@
 # -*- coding: utf-8 -*-
 """
-This module defines the functions and methods that create the datasets from the raw data
-files. The `main()` function takes two arguments, input_filepath and output_filepath, and
+This module defines the functions and methods that create the raw PARQUET files from the
+raw data MATLAB files. The `main()` function takes 5 arguments, input_filepath,
+output_filepath, val_crit_filepath, test_crit_filepath, and overwrite_output.
 ...
 
 Args:
-    input_filepath: The path to the input file.
-    output_filepath: The path to the output file.
+      input_filepath (str): location of the raw .mat file. Defaults to
+      "../../data/raw/exercise_data.50.0000_multionly.mat"
+      output_path (str): location to store the raw PARQUET files. Defaults to
+      "../../data/interim/"
+      val_crit_filepath (str): path to JSON specifying parameters for splitting
+      training files into train vs. validation set. See `_make_train_val_split_json` for
+      all parameter options. Defaults to "./val_split_crit.json".
+      test_crit_filepath (str): path to JSON specifying parameters for splitting
+      files into train-val vs. test set. See `_make_train_test_split_json` for
+      all parameter options.  Defaults to "./test_split_crit.json".
+      overwrite_output (bool): Whether to overwrite the raw PARQUET files
+      if they already exist. Defaults to False
 """
 import json
 import logging
@@ -17,12 +28,8 @@ from typing import DefaultDict, Dict, Generator, List, Tuple, Union
 import click
 import numpy as np
 import pandas as pd
+import scipy.io as sio
 from dotenv import find_dotenv, load_dotenv
-from scipy import io as sio
-
-ACTIVITY_GROUPS_FILE = Path(__file__).parent / "activity_groupings.json"
-TRAIN_VAL_FILE = Path(__file__).parent / "train_val_files.json"
-TRAIN_TEST_FILE = Path(__file__).parent / "train-val_test_files.json"
 
 
 def _load_matfile(file: str) -> dict:
@@ -118,7 +125,7 @@ def _write_json(file_path: Union[str, Path], data: dict) -> None:
 
 def _write_single_parquet_file(
     interim_filepath: Union[str, Path],
-    subj_data: sio.matlab.mat_struct,
+    subj_data: sio.matlab.mio5_params.mat_struct,
     data_id: int,
 ) -> None:
     """
@@ -175,20 +182,6 @@ def _write_activity_groupings_json(useful_activity_groupings: np.ndarray) -> Non
     _write_json(ACTIVITY_GROUPS_FILE, activity_groupings)
 
 
-def _make_train_dataset(interim_path: str) -> None:
-    """foobar"""
-    logger = logging.getLogger(__name__)
-    logger.info("making training dataset")
-    print(interim_path)
-
-
-def _make_validation_dataset(interim_path: str) -> None:
-    """foobar"""
-    logger = logging.getLogger(__name__)
-    logger.info("making validation dataset")
-    print(interim_path)
-
-
 def _make_files_dict(all_files: list) -> DefaultDict[str, list]:
     """
     It takes a list of file paths and returns a dictionary of subject names and the list of
@@ -202,6 +195,9 @@ def _make_files_dict(all_files: list) -> DefaultDict[str, list]:
     """
     files_dict = defaultdict(list)
     for file in all_files:
+        # ignore non-data files
+        if not file.parts[-1].startswith("fileID"):
+            continue
         _, subj, _ = file.parts[-1].split("_")
         files_dict[subj].append(str(file))
 
@@ -285,7 +281,9 @@ def _make_train_test_split_json(
       n_sing_file (int): number of single-data-file subjects to include in the test set
       n_double_file (int): number of double-data-file subjects to include in the test set
     """
-    all_files = list(x for x in interim_path.iterdir() if x.is_file())
+    all_files = list(
+        x for x in interim_path.iterdir() if x.is_file() and "fileID" in str(x)
+    )
     files_dict = _make_files_dict(all_files)
 
     test_subj_ids = _get_first_subjs_match_crit(files_dict, n_sing_file, n_double_file)
@@ -712,12 +710,56 @@ def _make_train_val_split_json(
     _write_json(TRAIN_VAL_FILE, train_val_dict)
 
 
-def make_train_val_dataset(
+def make_data_splits_json(
     interim_path: str,
     test_split_criteria: Dict[str, int],
     val_split_criteria: Dict[str, int],
-):
-    """foobar"""
+) -> None:
+    """
+    This function akes in the path to the interim data folder, the test split criteria,
+    and the validation split criteria, and creates two json files in the interim data
+    folder: one that splits the data into train/val vs. test, and one that splits the
+    data into train vs. val.
+
+    The function first checks if the train/val vs. test split file exists. If it doesn't,
+    it calls the `_make_train_test_split_json` function, which takes in the path to the
+    interim data folder and the test split criteria, and creates the train/val vs. test
+    split file.
+
+    The function then checks if the train vs. val split file exists. If it doesn't, it
+    calls the `_make_train_val_split_json` function, which takes in the validation split
+    criteria and creates the train vs. val split file.
+
+    Args:
+      interim_path (str): the path to the interim data folder
+      test_split_criteria (Dict[str, int]): Criterion for splitting data between test
+      and train/val datasets, in the form of:
+        {
+            "n_double_file": int,
+            "n_sing_file": int
+        }
+      where "n_double_file" is the number of subjects that have 2 data recordings, and
+      "n_sing_file" is the number of subjects that have 1 data recording
+      val_split_criteria (Dict[str, int]): Criterion for splitting data between test
+      and train and val datasets, in the form of:
+        {
+            "desired_val_files": int,
+            "desired_val_subjs": int,
+            "n_2_files": int,
+            "n_3_files": int,
+            "n_4_files": int,
+            "n_5_files": int,
+            "n_files_tol": int
+        }
+      where "desired_val_files" is the total number of files in the validation set,
+      "desired_val_subjs" is the total number of subjects in the validation set,
+      "n_2_files" is the number of subjects with 2 data recordings in the validation set,
+      "n_3_files" is the number of subjects with 3 data recordings in the validation set,
+      "n_4_files" is the number of subjects with 4 data recordings in the validation set,
+      "n_5_files" is the number of subjects with 5 data recordings in the validation set,
+      "n_files_tol" is the tolerance on the total number of files in the validation set,
+      used to try to satisfy all constraints.
+    """
     logger = logging.getLogger(__name__)
     if not TRAIN_TEST_FILE.exists():
         logger.info(
@@ -725,17 +767,15 @@ def make_train_val_dataset(
         )
         _make_train_test_split_json(Path(interim_path), **test_split_criteria)
         logger.info("writing train/val-test file complete")
+    else:
+        logger.info("train/val vs. test split file already exists...")
 
     if not TRAIN_VAL_FILE.exists():
         logger.info("train vs. val split file does not exist. writing file first...")
         _make_train_val_split_json(**val_split_criteria)
         logger.info("writing train-val file complete")
-
-    _make_train_dataset(interim_path)
-
-    _make_validation_dataset(interim_path)
-
-    _make_test_dataset(interim_path)
+    else:
+        logger.info("train vs. val split file already exists...")
 
 
 @click.command()
@@ -746,16 +786,10 @@ def make_train_val_dataset(
     default="../../data/raw/exercise_data.50.0000_multionly.mat",
 )
 @click.argument(
-    "interim_path",
-    type=click.Path(exists=True),
-    required=False,
-    default="../../data/interim/raw/",
-)
-@click.argument(
     "output_path",
     type=click.Path(exists=True),
     required=False,
-    default="../../data/interim/preprocessed/",
+    default="../../data/interim/",
 )
 @click.argument(
     "val_crit_filepath",
@@ -770,81 +804,64 @@ def make_train_val_dataset(
     default="./test_split_crit.json",
 )
 @click.option(
-    "--overwrite-interim/--keep-interim",
-    type=bool,
-    default=False,
-    show_default=True,
-    help="Whether to overwrite files of matching interim data by filename if they already exist.",
-)
-@click.option(
     "--overwrite-output/--keep-output",
     type=bool,
     default=False,
     show_default=True,
-    help="Whether to overwrite files of matching output data by filename if they already exist.",
+    help=(
+        "Whether to overwrite files of matching output data by filename if they already "
+        "exist."
+    ),
 )
 def main(
     input_filepath: str = "../../data/raw/exercise_data.50.0000_multionly.mat",
-    interim_path: str = "../../data/interim/raw/",
-    output_path: str = "../../data/interim/preprocessed/",
+    output_path: str = "../../data/interim/",
     val_crit_filepath: str = "./val_split_crit.json",
     test_crit_filepath: str = "./test_split_crit.json",
-    overwrite_interim: bool = False,
     overwrite_output: bool = False,
 ) -> None:
     # pylint: disable=too-many-arguments
     """
-    Runs data processing scripts to turn raw data from (../raw) into
-    cleaned data ready to be analyzed (saved in ../interim/preprocessed). It requires
-    intermediate steps of converting data in a .mat file to a series of PARQUET files (one
-    file per subject and run through an exercise routine), separating data files into
-    train, validation, and test sets.
+    Runs data processing scripts to turn raw data from (../raw) in MATLAB format into
+    PARQUET files ready to be featurized (saved in ../interim/). Function also creates
+    JSON files which serve to separate data files into train, validation, and test sets.
 
     Args:
       input_filepath (str): location of the raw .mat file. Defaults to
       "../../data/raw/exercise_data.50.0000_multionly.mat"
-      interim_path (str): location to store the PARQUET files. Defaults to
-      "../../data/interim/raw/"
-      output_path (str): location to store the final preprocessed output.
-      Defaults to "../../data/interim/preprocessed/"
+      output_path (str): location to store the raw PARQUET files. Defaults to
+      "../../data/interim/"
       val_crit_filepath (str): path to JSON specifying parameters for splitting
       training files into train vs. validation set. See `_make_train_val_split_json` for
       all parameter options. Defaults to "./val_split_crit.json".
       test_crit_filepath (str): path to JSON specifying parameters for splitting
       files into train-val vs. test set. See `_make_train_test_split_json` for
       all parameter options.  Defaults to "./test_split_crit.json".
-      overwrite_interim (bool): Whether to overwrite the interim PARQUET files
+      overwrite_output (bool): Whether to overwrite the raw PARQUET files
       if they already exist. Defaults to False
-      overwrite_output (bool): Whether to overwrite the final preprocessed
-      files if they already exist. Defaults to False.
     """
     logger = logging.getLogger(__name__)
-    logger.info("making final data set from raw data")
+    logger.info("making interim dataset from raw data")
 
-    if overwrite_interim:
+    if overwrite_output:
         logger.info("function will overwrite existing interim data")
 
     if "multi" in input_filepath:
         logger.info("converting multi-acivity .mat file to PARQUET format")
         logger.info("Loading %s", input_filepath)
-        multi_convert_mat_to_parquet(input_filepath, interim_path, overwrite_interim)
+        multi_convert_mat_to_parquet(input_filepath, output_path, overwrite_output)
     else:
         raise ValueError("Function not defined to preprocess single-activity dataset.")
 
     logger.info("conversion to PARQUET complete")
 
-    logger.info("preprocessing PARQUET files")
-    output_path_ = Path(output_path)
-    output_path_empty = not any(output_path_.iterdir())
-    if overwrite_output or output_path_empty:
-        test_split_criteria = _read_json(test_crit_filepath)
-        val_split_criteria = _read_json(val_crit_filepath)
-        # remove comment from json data if it exists
-        val_split_criteria.pop("_comment", None)
-        logger.info("(over-)writing preprocessed data")
-        make_train_val_dataset(interim_path, test_split_criteria, val_split_criteria)
-    else:
-        logger.info("preprocessed already complete, skipping...")
+    logger.info("creating train-val-test split JSONs")
+    test_split_criteria = _read_json(test_crit_filepath)
+    val_split_criteria = _read_json(val_crit_filepath)
+    # remove comment from json data if it exists
+    val_split_criteria.pop("_comment", None)
+    make_data_splits_json(output_path, test_split_criteria, val_split_criteria)
+    logger.info("dataset creation complete...")
 
 
 if __name__ == "__main__":
@@ -852,7 +869,10 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format=LOG_FMT)
 
     # not used in this stub but often useful for finding various files
-    project_dir = Path(__file__).resolve().parents[2]
+    project_dir = Path(__file__).resolve().parents[1]
+    ACTIVITY_GROUPS_FILE = project_dir / "data" / "activity_groupings.json"
+    TRAIN_VAL_FILE = project_dir / "features" / "train_val_files.json"
+    TRAIN_TEST_FILE = project_dir / "features" / "train-val_test_files.json"
 
     # find .env automagically by walking up directories until it's found, then
     # load up the .env entries as environment variables
