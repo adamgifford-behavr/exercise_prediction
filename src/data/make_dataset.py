@@ -293,13 +293,6 @@ def _make_train_test_split_json(
     _write_json(TRAIN_TEST_FILE, train_test_files)
 
 
-def _make_test_dataset(interim_path: str):
-    """foobar"""
-    logger = logging.getLogger(__name__)
-    logger.info("making test dataset")
-    print(interim_path)
-
-
 def write_single_parquet_file_wrapper(
     interim_path: Union[str, Path],
     subj_data: np.ndarray,

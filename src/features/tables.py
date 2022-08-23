@@ -6,7 +6,7 @@ building. Currently, the following feature tables exist in the databse:
     naive_frequency_features
 """
 # pylint:  disable=too-few-public-methods
-from sqlalchemy import Column, DateTime, Float, Integer, String
+from sqlalchemy import Column, DateTime, Float, Integer, Sequence, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import decl_api
 
@@ -20,8 +20,18 @@ class NaiveFreqFeats(Base):
     """
 
     __tablename__ = "naive_frequency_features"
-    id = Column(Integer, primary_key=True)
-    featurize_id = Column(Integer)
+
+    naive_frequency_features_id = Sequence(
+        "naive_frequency_features_naive_frequency_features_id_seq",
+        metadata=Base.metadata,
+    )
+    naive_frequency_features_id = Column(
+        Integer,
+        naive_frequency_features_id,
+        server_default=naive_frequency_features_id.next_value(),
+        primary_key=True,
+    )
+    featurize_id = Column(String)
     file = Column(String)
     dataset_group = Column(String)
     added_datetime = Column(DateTime)
