@@ -91,3 +91,6 @@ target/
 # os/local repo specific configs
 .gitattributes
 .pre-commit-config.yaml
+
+# MLflow metadata
+**/mlruns
