@@ -11,10 +11,10 @@ Args:
       output_path (str): location to store the raw PARQUET files. Defaults to
       "../../data/interim/"
       val_crit_filepath (str): path to JSON specifying parameters for splitting
-      training files into train vs. validation set. See `_make_train_val_split_json` for
+      training files into train vs. validation set. See `_make_train_val_split` for
       all parameter options. Defaults to "./val_split_crit.json".
       test_crit_filepath (str): path to JSON specifying parameters for splitting
-      files into train-val vs. test set. See `_make_train_test_split_json` for
+      files into train-val vs. test set. See `_make_train_test_sim_split` for
       all parameter options.  Defaults to "./test_split_crit.json".
       overwrite_output (bool): Whether to overwrite the raw PARQUET files
       if they already exist. Defaults to False
@@ -241,11 +241,11 @@ def _get_first_subjs_match_crit(
 
 
 def _make_train_test_dict(
-    all_files: List[Path], test_subj_ids: list
+    all_files: List[Path], test_subj_ids: list, sim_subj_ids: list
 ) -> DefaultDict[str, list]:
     """
-    It takes a dictionary of file paths and splits them into two lists, one for training
-    and one for testing.
+    It takes a dictionary of file paths and splits them into three lists, one for training,
+    one for testing, and one for deployment simulation.
 
     Args:
       all_files (DefaultDict[str, list]): a list of all the files in the directory
@@ -260,26 +260,32 @@ def _make_train_test_dict(
         _, subj, _ = file.parts[-1].split("_")
         if any(subj == test_subj for test_subj in test_subj_ids):
             train_test_files["test"].append(str(file))
+        elif any(subj == sim_subj for sim_subj in sim_subj_ids):
+            train_test_files["simulate"].append(str(file))
         else:
             train_test_files["train_val"].append(str(file))
 
     return train_test_files
 
 
-def _make_train_test_split_json(
-    interim_path: Path, n_sing_file: int, n_double_file: int
-) -> None:
+def _make_train_test_sim_split(
+    interim_path: Path, n_sing_file: int, n_double_file: int, n_sim_file: int = 1
+) -> Dict[str, List[str]]:
     """
     It takes a directory of files, and splits them into train and test sets, based on the
     number of subjects in the test set that should have one (`n_file_single) or two
     (`n_file_double`) data recording files. This function simply finds the first subjects
     to meet these criteria by cycling through the files in `interim_path` in alphanumeric
-    order.
+    order. It then subsequently takes n_sim_file from the test list to save for
+    simulating batch and/or stream service predictions and model updating. This function
+    simply grabs the last files from the test dataset list to save for streaming.
 
     Args:
       interim_path (Path): the path to the interim data folder
       n_sing_file (int): number of single-data-file subjects to include in the test set
       n_double_file (int): number of double-data-file subjects to include in the test set
+      n_sim_file (int): number of files from the test dataset to save for simulating
+      real-world deployment and module updating,
     """
     all_files = list(
         x for x in interim_path.iterdir() if x.is_file() and "fileID" in str(x)
@@ -287,10 +293,14 @@ def _make_train_test_split_json(
     files_dict = _make_files_dict(all_files)
 
     test_subj_ids = _get_first_subjs_match_crit(files_dict, n_sing_file, n_double_file)
+    sim_subj_ids = []
+    for _ in range(n_sim_file):
+        sim_subj_ids.append(test_subj_ids.pop())
 
-    train_test_files = _make_train_test_dict(all_files, test_subj_ids)
+    train_test_files = _make_train_test_dict(all_files, test_subj_ids, sim_subj_ids)
 
-    _write_json(TRAIN_TEST_FILE, train_test_files)
+    # _write_json(TRAIN_TEST_FILE, train_test_files)
+    return train_test_files
 
 
 def write_single_parquet_file_wrapper(
@@ -642,21 +652,25 @@ def verify_satisfy_split(
     return val_subjs, train_subjs
 
 
-def _make_train_val_split_json(
+def _make_train_val_split(
+    train_test_files: Dict[str, List[str]],
     desired_val_subjs: int,
     desired_val_files: int,
     n_files_tol: int = 1,
     **kwargs,
-) -> None:
+) -> Dict[str, List[str]]:
     # pylint: disable=too-many-locals
     """
-    It takes in the desired number of subjects and files to include in the validation set,
-    and then it splits the training set into a validation set and a training set, such that
+    It takes in a dictionary splitting data into train/val, test, and simulation, and the
+    desired number of subjects and files to include in the validation set,
+    and then it splits the train/val set into a validation set and a training set, such that
     the validation set has the desired number of subjects and files, with the added
     constraints regarding the number of subjects included that have certain numbers of
     data files defined by kwargs (see `_get_desired_multifile_params`).
 
     Args:
+      train_test_files (Dict[str, List[str]]): a dictionary that contains the list of files
+      per uber data category (i.e., keys: "train_val", "test", and "sim")
       desired_val_subjs (int): the number of subjects you want in the validation set
       desired_val_files (int): the number of files you want in the validation set
       n_files_tol (int): the number of files that can be off from the desired
@@ -671,7 +685,6 @@ def _make_train_val_split_json(
     # idempotent
     # since we first make the split between train/val & test, we load in this data
     # and then just focus on the train files to split further
-    train_test_files = _read_json(TRAIN_TEST_FILE)
     train_val_files = [Path(file) for file in train_test_files["train_val"]]
     files_dict = _make_files_dict(train_val_files)
     sorted_data = _get_sorted_train_val_files(files_dict)
@@ -694,13 +707,16 @@ def _make_train_val_split_json(
     )
 
     # now, find the file names for each subject in val_subjs and train_subjs and store as dict
-    train_val_dict = {
+    trn_val_tst_sim_dict = {
         "validation": [file for subj in val_subjs for file in files_dict[subj]],
         "train": [file for subj in train_subjs for file in files_dict[subj]],
     }
 
-    # now, write dict to json
-    _write_json(TRAIN_VAL_FILE, train_val_dict)
+    # # now, write dict to json
+    # _write_json(TRAIN_VAL_FILE, train_val_dict)
+    trn_val_tst_sim_dict["test"] = train_test_files["test"]
+    trn_val_tst_sim_dict["simulate"] = train_test_files["simulate"]
+    return trn_val_tst_sim_dict
 
 
 def make_data_splits_json(
@@ -715,12 +731,12 @@ def make_data_splits_json(
     data into train vs. val.
 
     The function first checks if the train/val vs. test split file exists. If it doesn't,
-    it calls the `_make_train_test_split_json` function, which takes in the path to the
+    it calls the `_make_train_test_sim_split` function, which takes in the path to the
     interim data folder and the test split criteria, and creates the train/val vs. test
     split file.
 
     The function then checks if the train vs. val split file exists. If it doesn't, it
-    calls the `_make_train_val_split_json` function, which takes in the validation split
+    calls the `_make_train_val_split` function, which takes in the validation split
     criteria and creates the train vs. val split file.
 
     Args:
@@ -754,21 +770,23 @@ def make_data_splits_json(
       used to try to satisfy all constraints.
     """
     logger = logging.getLogger(__name__)
-    if not TRAIN_TEST_FILE.exists():
+    if not DATA_GROUP_SPLITS.exists():
         logger.info(
-            "train/val vs. test split file does not exist. writing file first..."
+            (
+                "json file for splitting files into groups (e.g., train, test, etc.) does "
+                "not exist. writing file first..."
+            )
         )
-        _make_train_test_split_json(Path(interim_path), **test_split_criteria)
-        logger.info("writing train/val-test file complete")
+        train_test_files = _make_train_test_sim_split(
+            Path(interim_path), **test_split_criteria
+        )
+        trn_val_tst_sim_splits = _make_train_val_split(
+            train_test_files, **val_split_criteria
+        )
+        _write_json(DATA_GROUP_SPLITS, trn_val_tst_sim_splits)
+        logger.info("writing datafile group splits complete")
     else:
-        logger.info("train/val vs. test split file already exists...")
-
-    if not TRAIN_VAL_FILE.exists():
-        logger.info("train vs. val split file does not exist. writing file first...")
-        _make_train_val_split_json(**val_split_criteria)
-        logger.info("writing train-val file complete")
-    else:
-        logger.info("train vs. val split file already exists...")
+        logger.info("json file for splitting files into groups already exists...")
 
 
 @click.command()
@@ -825,10 +843,10 @@ def main(
       output_path (str): location to store the raw PARQUET files. Defaults to
       "../../data/interim/"
       val_crit_filepath (str): path to JSON specifying parameters for splitting
-      training files into train vs. validation set. See `_make_train_val_split_json` for
+      training files into train vs. validation set. See `_make_train_val_split` for
       all parameter options. Defaults to "./val_split_crit.json".
       test_crit_filepath (str): path to JSON specifying parameters for splitting
-      files into train-val vs. test set. See `_make_train_test_split_json` for
+      files into train-val vs. test set. See `_make_train_test_sim_split` for
       all parameter options.  Defaults to "./test_split_crit.json".
       overwrite_output (bool): Whether to overwrite the raw PARQUET files
       if they already exist. Defaults to False
@@ -864,8 +882,7 @@ if __name__ == "__main__":
     # not used in this stub but often useful for finding various files
     project_dir = Path(__file__).resolve().parents[1]
     ACTIVITY_GROUPS_FILE = project_dir / "data" / "activity_groupings.json"
-    TRAIN_VAL_FILE = project_dir / "features" / "train_val_files.json"
-    TRAIN_TEST_FILE = project_dir / "features" / "train-val_test_files.json"
+    DATA_GROUP_SPLITS = project_dir / "features" / "datafile_group_splits.json"
 
     # find .env automagically by walking up directories until it's found, then
     # load up the .env entries as environment variables
