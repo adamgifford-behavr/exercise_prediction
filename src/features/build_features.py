@@ -514,17 +514,6 @@ def main(
 
             logger.info("%s dataset complete", dataset_group)
 
-        # logger.info("creating test dataset")
-        # test_files = trainval_test_files["test"]
-        # for file in test_files:
-        #     logger.info("analyzing file %s...", file)
-        #     features_df = calculate_windowed_feats(
-        #         featurize_id, "test", file, n_fft, features, all_features_df.columns
-        #     )
-        #     all_features_df = pd.concat([all_features_df, features_df])
-
-        # logger.info("test dataset complete")
-
         logger.info("writing dataset to database")
         write_features_to_db(all_features_df, table, engine)
         logger.info("writing to database complete")
