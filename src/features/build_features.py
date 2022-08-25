@@ -415,16 +415,10 @@ def delete_existing_dataset(
     default="./frequency_features.json",
 )
 @click.argument(
-    "train_val_json",
+    "data_splits_json",
     type=click.Path(exists=True),
     required=False,
-    default="./train_val_files.json",
-)
-@click.argument(
-    "trainval_test_json",
-    type=click.Path(exists=True),
-    required=False,
-    default="./train-val_test_files.json",
+    default="./datafile_group_splits.json",
 )
 @click.argument(
     "metaparams_json",
@@ -444,8 +438,7 @@ def delete_existing_dataset(
 )
 def main(
     features_json: str = "./frequency_features.json",
-    train_val_json: str = "./train_val_files.json",
-    trainval_test_json: str = "./train-val_test_files.json",
+    data_splits_json: str = "./datafile_group_splits.json",
     metaparams_json: str = "./metaparams.json",
     overwrite_data: bool = False,
 ):
@@ -456,10 +449,9 @@ def main(
     Args:
       features_json (str): The path to the json file that lists the frequencies of
       interest for each measurement signal. Defaults to ./frequency_features.json
-      train_val_json (str): The path to the json file that separates the train/val files
-      into training and validation groupings. Defaults to ./train_val_files.json
-      trainval_test_json (str): The path to the json file that separates the files
-      into training/validation and test groupings. Defaults to ./train-val_test_files.json
+      data_splits_json (str): The path to the json file that separates the files into
+      training, validation, testing, and simulation groupings. Defaults to
+      ./datafile_group_splits.json
       metaparams_json (str): str = The path to the json file that describes the
       metaparameters that uniquely identify the processing pipeline to build the
       features dataset. Defaults to ./metaparams.json
@@ -472,15 +464,14 @@ def main(
 
     # load meta data
     logger.info("loading metadata")
-    train_val_files = _read_json(train_val_json)
-    trainval_test_files = _read_json(trainval_test_json)
+    datafile_splits = _read_json(data_splits_json)
     features = _read_json(features_json)
     metaparams = _read_json(metaparams_json)
 
     table_name = metaparams["table_name"]
     n_fft = metaparams["n_fft"]
 
-    featurize_id = _generate_featurize_id(train_val_files, metaparams)
+    featurize_id = _generate_featurize_id(datafile_splits, metaparams)
     logger.info("id for this run of `build_features` is %s", featurize_id)
 
     engine: sa.engine.base.Engine = sa.create_engine(
@@ -507,7 +498,7 @@ def main(
         logger.info("making features dataset...")
 
         all_features_df = _make_empty_features_df(table)
-        for dataset_group, data_files in train_val_files.items():
+        for dataset_group, data_files in datafile_splits.items():
             logger.info("creating %s dataset...", dataset_group)
             for file in data_files:
                 logger.info("analyzing file %s...", file)
@@ -523,16 +514,16 @@ def main(
 
             logger.info("%s dataset complete", dataset_group)
 
-        logger.info("creating test dataset")
-        test_files = trainval_test_files["test"]
-        for file in test_files:
-            logger.info("analyzing file %s...", file)
-            features_df = calculate_windowed_feats(
-                featurize_id, "test", file, n_fft, features, all_features_df.columns
-            )
-            all_features_df = pd.concat([all_features_df, features_df])
+        # logger.info("creating test dataset")
+        # test_files = trainval_test_files["test"]
+        # for file in test_files:
+        #     logger.info("analyzing file %s...", file)
+        #     features_df = calculate_windowed_feats(
+        #         featurize_id, "test", file, n_fft, features, all_features_df.columns
+        #     )
+        #     all_features_df = pd.concat([all_features_df, features_df])
 
-        logger.info("test dataset complete")
+        # logger.info("test dataset complete")
 
         logger.info("writing dataset to database")
         write_features_to_db(all_features_df, table, engine)
@@ -549,12 +540,11 @@ if __name__ == "__main__":
 
     # not used in this stub but often useful for finding various files
     project_dir = Path(__file__).resolve().parents[1]
-    FEATURE_STORE_HOST = os.getenv("FEATURE_STORE_URI", "localhost")
-    FEATURE_STORE_PORT = os.getenv("FEATURE_STORE_PORT", "5432")
+    FEATURE_STORE_URI = os.getenv("FEATURE_STORE_URI", "localhost")
     FEATURE_STORE_PW = os.getenv("FEATURE_STORE_PW")
     DATABASE_URI = (
-        f"postgresql+psycopg2://postgres:{FEATURE_STORE_PW}@{FEATURE_STORE_HOST}:"
-        f"{FEATURE_STORE_PORT}/feature_store"
+        f"postgresql+psycopg2://postgres:{FEATURE_STORE_PW}@{FEATURE_STORE_URI}"
+        "/feature_store"
     )
 
     main()

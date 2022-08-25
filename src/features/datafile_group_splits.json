@@ -1,4 +1,33 @@
 {
+  "simulate": [
+    "..\\..\\data\\interim\\fileID12_subjID10003_dataID0.parquet"
+  ],
+  "test": [
+    "..\\..\\data\\interim\\fileID100_subjID551_dataID0.parquet",
+    "..\\..\\data\\interim\\fileID101_subjID547_dataID0.parquet",
+    "..\\..\\data\\interim\\fileID102_subjID454_dataID0.parquet",
+    "..\\..\\data\\interim\\fileID103_subjID556_dataID0.parquet",
+    "..\\..\\data\\interim\\fileID104_subjID559_dataID0.parquet",
+    "..\\..\\data\\interim\\fileID105_subjID555_dataID0.parquet",
+    "..\\..\\data\\interim\\fileID108_subjID560_dataID0.parquet",
+    "..\\..\\data\\interim\\fileID10_subjID10001_dataID0.parquet",
+    "..\\..\\data\\interim\\fileID112_subjID536_dataID0.parquet",
+    "..\\..\\data\\interim\\fileID113_subjID567_dataID0.parquet",
+    "..\\..\\data\\interim\\fileID115_subjID509_dataID0.parquet",
+    "..\\..\\data\\interim\\fileID116_subjID575_dataID0.parquet",
+    "..\\..\\data\\interim\\fileID118_subjID530_dataID0.parquet",
+    "..\\..\\data\\interim\\fileID11_subjID10002_dataID0.parquet",
+    "..\\..\\data\\interim\\fileID120_subjID570_dataID0.parquet",
+    "..\\..\\data\\interim\\fileID121_subjID576_dataID0.parquet",
+    "..\\..\\data\\interim\\fileID123_subjID536_dataID1.parquet",
+    "..\\..\\data\\interim\\fileID124_subjID561_dataID0.parquet",
+    "..\\..\\data\\interim\\fileID129_subjID539_dataID0.parquet",
+    "..\\..\\data\\interim\\fileID136_subjID560_dataID1.parquet",
+    "..\\..\\data\\interim\\fileID138_subjID570_dataID1.parquet",
+    "..\\..\\data\\interim\\fileID143_subjID509_dataID1.parquet",
+    "..\\..\\data\\interim\\fileID147_subjID454_dataID1.parquet",
+    "..\\..\\data\\interim\\fileID42_subjID10002_dataID1.parquet"
+  ],
   "train": [
     "..\\..\\data\\interim\\fileID110_subjID3_dataID3.parquet",
     "..\\..\\data\\interim\\fileID146_subjID3_dataID4.parquet",
