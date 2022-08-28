@@ -3,8 +3,6 @@
 This module defines the functions and methods that create the training, validation, and
 testing datasets from the raw PARQUET files. The `main()` function takes
 
-Args:
-
 """
 import hashlib
 import json
@@ -515,6 +513,7 @@ def main(
             logger.info("%s dataset complete", dataset_group)
 
         logger.info("writing dataset to database")
+        all_features_df = all_features_df.dropna(subset="label")
         write_features_to_db(all_features_df, table, engine)
         logger.info("writing to database complete")
 
