@@ -1,0 +1,28 @@
+{
+  "fixed_paramaters": {
+    "n_iter_no_change": 50,
+    "random_state": 42,
+    "tol": 0.001,
+    "warm_start": true
+  },
+  "fmin_rstate": 42,
+  "model": "gradientboostingclassifier",
+  "search_parameters": [
+    "max_depth",
+    "learning_rate",
+    "n_estimators",
+    "subsample",
+    "min_samples_split",
+    "min_samples_leaf",
+    "max_features"
+  ],
+  "test_limit": 200,
+  "train_limit": 800,
+  "unsearched_parameters": [
+    "ccp_alpha",
+    "max_leaf_nodes",
+    "min_impurity_decrease",
+    "min_weight_fraction_leaf"
+  ],
+  "validation_limit": 200
+}

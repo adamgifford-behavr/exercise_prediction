@@ -1,0 +1,27 @@
+{
+  "fixed_paramaters": {
+    "bootstrap": true,
+    "n_jobs": 10,
+    "random_state": 42,
+    "warm_start": true
+  },
+  "fmin_rstate": 42,
+  "model": "randomforestclassifier",
+  "search_parameters": [
+    "max_depth",
+    "n_estimators",
+    "min_samples_split",
+    "min_samples_leaf",
+    "max_features",
+    "max_samples"
+  ],
+  "test_limit": 200,
+  "train_limit": 800,
+  "unsearched_parameters": [
+    "ccp_alpha",
+    "max_leaf_nodes",
+    "min_impurity_decrease",
+    "min_weight_fraction_leaf"
+  ],
+  "validation_limit": 200
+}

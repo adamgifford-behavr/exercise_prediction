@@ -8,14 +8,12 @@ model exists or the new model has a better accuracy
 """
 import gc
 import json
-import logging
 import os
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Generator, List, Literal, Optional, Tuple, Union
 
-import click
 import mlflow
 import pandas as pd
 import sqlalchemy as sa
@@ -27,6 +25,8 @@ from hyperopt.pyll import scope
 from mlflow.entities import ViewType
 from mlflow.tracking import MlflowClient
 from numpy import float64, random
+from prefect import flow, get_run_logger, task
+from prefect.task_runners import SequentialTaskRunner
 from sklearn.base import ClassifierMixin
 from sklearn.ensemble import (
     ExtraTreesClassifier,
@@ -67,6 +67,31 @@ ALL_SEARCH_PARAMS = {
     "learning_rate": hp.loguniform("learning_rate", -3, 0),
     "subsample": hp.quniform("subsample", 0.5, 1, 0.05),
 }
+
+# find .env automagically by walking up directories until it's found, then
+# load up the .env entries as environment variables
+load_dotenv(find_dotenv())
+
+FEATURE_STORE_URI = os.getenv("FEATURE_STORE_URI", "localhost:5432")
+FEATURE_STORE_PW = os.getenv("FEATURE_STORE_PW")
+FEATURIZE_ID = os.getenv("FEATURIZE_ID")
+EXP_NAME = os.getenv("EXP_NAME", "exercise_prediction_naive_feats")
+DEBUG = os.getenv("DEBUG", "false") == "true"
+DATABASE_URI = (
+    f"postgresql+psycopg2://postgres:{FEATURE_STORE_PW}@{FEATURE_STORE_URI}"
+    "/feature_store"
+)
+
+MLFLOW_DB_URI = os.getenv("MLFLOW_DB_URI", "localhost:5000")
+MLFLOW_DB_PW = os.getenv("MLFLOW_DB_PW")
+
+mlflow.set_tracking_uri(f"http://{MLFLOW_DB_URI}")
+if DEBUG:
+    EXP_NAME = EXP_NAME + "_debug"
+
+mlflow.set_experiment(EXP_NAME)
+EXP_ID = dict(mlflow.get_experiment_by_name(EXP_NAME))["experiment_id"]
+CLIENT = MlflowClient(f"http://{MLFLOW_DB_URI}")
 
 
 def _read_json(file_path: Union[str, Path]) -> dict:
@@ -123,6 +148,7 @@ def _get_database_tools(
     return engine, table
 
 
+@task(name="Data Loading")
 def load_data(
     table_name: str,
     data_group: Literal["train", "validation", "test"],
@@ -162,6 +188,7 @@ def load_data(
     return df
 
 
+@task(name="Preprocessing")
 def process_columns(
     table_name: str, df: pd.DataFrame, drop_additional_features: Optional[list] = None
 ):
@@ -231,6 +258,7 @@ def _get_named_classifier(model_name: str, params: Dict[str, Any]) -> Classifier
     return pipe
 
 
+@task(name="Model Hyperparameter Search with hyperopt")
 def model_search(
     model_name: str,
     fixed_params: Dict[str, Any],
@@ -326,6 +354,7 @@ def model_search(
     return best_result, parent_run_id
 
 
+@task(name="Train and Log Best Model")
 def train_log_best_model(
     parent_run_id: str,
     model_name: str,
@@ -368,6 +397,7 @@ def train_log_best_model(
     return clf, best_child_id
 
 
+@task(name="Test and Log Best-Model Accuracy")
 def test_log_best_model(
     run_id: str,
     clf: ClassifierMixin,
@@ -439,6 +469,7 @@ def transition_model_and_log(
     return "complete"
 
 
+@task(name="Compare with Registered Models")
 def compare_with_registered_models(
     new_model_run_id: str, new_acc: Union[float64, float]
 ) -> str:
@@ -453,7 +484,7 @@ def compare_with_registered_models(
     Returns:
       The model version
     """
-    logger = logging.getLogger(__name__)
+    logger = get_run_logger()
     # first, need to check if model exists in the registry, create if not
     registered_models = CLIENT.list_registered_models()
     model_names = []
@@ -532,44 +563,14 @@ def compare_with_registered_models(
     return "complete"
 
 
-@click.command()
-@click.argument(
-    "table_name",
-    type=str,
-    required=False,
-    default="naive_frequency_features",
-)
-@click.argument(
-    "label_col",
-    type=str,
-    required=False,
-    default="label_group",
-)
-@click.argument(
-    "model_search_json",
-    type=click.Path(exists=True),
-    required=False,
-    default="./model_search.json",
-)
-@click.option(
-    "--initial_points_json",
-    type=click.Path(exists=False),
-    required=False,
-    default=None,
-    show_default=True,
-    help=(
-        (
-            "JSON file containing hyperparameter starting points for first trial in "
-            "hyperopt fit."
-        )
-    ),
-)
-def main(
+@flow(name="Main Model-Building Flow", task_runner=SequentialTaskRunner())
+def main_flow(
     table_name: str = "naive_frequency_features",
     label_col: str = "label_group",
     model_search_json: str = "./model_search.json",
     initial_points_json: Optional[str] = None,
 ) -> None:
+    # pylint: disable=too-many-locals
     """
     This function loads the data, performs a search over the hyperparameters using hyperopt,
     and then trains the best model on the training data and tests it on the test data.
@@ -586,8 +587,8 @@ def main(
       contains starting points for hyperparameter values for fitting procedure (e.g., to
       use values from previous fit to potentially speed up fitting). Defaults to None
     """
-    # pylint: disable=too-many-locals
-    logger = logging.getLogger(__name__)
+
+    logger = get_run_logger()
     logger.info("loading metadata")
     model_search_params = _read_json(model_search_json)
     data_limits = [
@@ -599,26 +600,26 @@ def main(
     search_params = model_search_params["search_parameters"]
     fmin_rstate = model_search_params["fmin_rstate"]
 
-    initial_points = None
+    initial_points: Optional[Union[List[Dict[Any, Any]], Dict[Any, Any]]] = None
     if initial_points_json:
         logger.info(
             "loading hyperparameter starting points from %s...", initial_points_json
         )
-        initial_points_ = _read_json(initial_points_json)
+        initial_points = _read_json(initial_points_json)
         # if we have a dict of lists (i.e., multiple starting points), convert to list
         # of dicts
-        if any(isinstance(val, list) for val in initial_points_.values()):
+        if any(isinstance(val, list) for val in initial_points.values()):
             initial_points = [
-                dict(zip(initial_points_, t)) for t in zip(*initial_points_.values())
+                dict(zip(initial_points, t)) for t in zip(*initial_points.values())
             ]
         else:
             # assume otherwise it is a simply dict with 1 val per key
-            initial_points = [initial_points_]
+            initial_points = [initial_points]
         logger.info("trials will start with parameters %s", initial_points)
 
     logger.info("loading training and validation data...")
     df_train_meta, df_val_meta = (
-        load_data(table_name, group, limit)  # type: ignore
+        load_data(table_name, group, limit)
         for group, limit in zip(["train", "validation"], data_limits)
     )
     logger.info("loading complete")
@@ -669,35 +670,3 @@ def main(
     _ = compare_with_registered_models(best_child_id, best_acc)
     logger.info("comparison complete")
     logger.info("complete")
-
-
-if __name__ == "__main__":
-    LOG_FMT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    logging.basicConfig(level=logging.INFO, format=LOG_FMT)
-
-    # find .env automagically by walking up directories until it's found, then
-    # load up the .env entries as environment variables
-    load_dotenv(find_dotenv())
-
-    FEATURE_STORE_URI = os.getenv("FEATURE_STORE_URI", "localhost:5432")
-    FEATURE_STORE_PW = os.getenv("FEATURE_STORE_PW")
-    FEATURIZE_ID = os.getenv("FEATURIZE_ID")
-    EXP_NAME = os.getenv("EXP_NAME", "exercise_prediction_naive_feats")
-    DEBUG = os.getenv("DEBUG", "false") == "true"
-    DATABASE_URI = (
-        f"postgresql+psycopg2://postgres:{FEATURE_STORE_PW}@{FEATURE_STORE_URI}"
-        "/feature_store"
-    )
-
-    MLFLOW_DB_URI = os.getenv("MLFLOW_DB_URI", "localhost:5000")
-    MLFLOW_DB_PW = os.getenv("MLFLOW_DB_PW")
-
-    mlflow.set_tracking_uri(f"http://{MLFLOW_DB_URI}")
-    if DEBUG:
-        EXP_NAME = EXP_NAME + "_debug"
-
-    mlflow.set_experiment(EXP_NAME)
-    EXP_ID = dict(mlflow.get_experiment_by_name(EXP_NAME))["experiment_id"]
-    CLIENT = MlflowClient(f"http://{MLFLOW_DB_URI}")
-
-    main()
