@@ -1,12 +1,13 @@
-"""Creates a deployment in Prefect for the flow `main_flow` in `orchestrate.py`."""
+"""Creates a deployment in Prefect for the flow `train_flow` in `orchestrate_train.py`."""
 import os
-from datetime import timedelta
 
 from dotenv import find_dotenv, load_dotenv
-from orchestrate import main_flow  # pylint: disable=import-error
 from prefect.deployments import Deployment
-from prefect.orion.schemas.schedules import IntervalSchedule
 
+import src.orchestration.orchestrate_train as ot
+
+# from datetime import timedelta
+# from prefect.orion.schemas.schedules import IntervalSchedule
 # from prefect.filesystems import LocalFileSystem
 # from prefect.filesystems import S3
 
@@ -27,13 +28,13 @@ if DEBUG:
 # storage = LocalFileSystem.load()
 
 deployment = Deployment.build_from_flow(
-    flow=main_flow,
-    name="prefect_model_training",
+    flow=ot.train_flow,
+    name="Exercise Group-Naive Features Predictions Training",
     tags=[EXP_NAME, FEATURIZE_ID, DEBUG, ENVIRONMENT],
     version=FLOW_VERSION,
     entrypoint="./",
-    schedule=IntervalSchedule(interval=timedelta(weeks=4)),
+    # schedule=IntervalSchedule(interval=timedelta(weeks=4)),
     # storage=storage,
-    work_queue_name="scheduled_flow",
+    work_queue_name="manual_training_flow",
 )
 deployment.apply()

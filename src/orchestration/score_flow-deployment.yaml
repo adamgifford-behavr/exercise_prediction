@@ -1,0 +1,71 @@
+###
+### A complete description of a Prefect Deployment for flow 'Model Batch Scoring'
+###
+name: Exercise Group-Naive Features Batch Scoring
+description: |-
+  It loads data from `feature_table`, applies a model to the data, and writes the
+  predictions to a `prediction_table`.
+
+  Args:
+    feature_table (str): The name of the table that contains the features that you want to
+    use to make predictions. Defaults to naive_frequency_features
+    prediction_table (str): The name of the table where the predictions will be written.
+    Defaults to naive_frequency_features_predictions
+    label_col (str): The name of the column in the feature table that contains the label
+    to be predicted. Defaults to label_group
+    model_name (str): The name of the MLflow registered model you want to use. Defaults
+    to exercise_prediction_naive_feats_pipe
+    model_stage (str): The stage of the registered model in the registry.
+    Defaults to Production
+version: b54f8cb0edc569c6ea8f4e4e8d610d8f
+# The work queue that will handle this deployment's runs
+work_queue_name: manual_scoring_flow
+tags: []
+parameters: {}
+schedule: null
+infra_overrides: {}
+infrastructure:
+  type: process
+  env: {}
+  labels: {}
+  name: null
+  command:
+  - python
+  - -m
+  - prefect.engine
+  stream_output: true
+
+###
+### DO NOT EDIT BELOW THIS LINE
+###
+flow_name: Model Batch Scoring
+manifest_path: null
+storage: null
+path: C:\Users\adamgifford_behavr.DESKTOP-PQU0D8M\Documents\DataScience\PersonalProjects\exercise_prediction\src\orchestration
+entrypoint: orchestrate_score_batch.py:score_flow
+parameter_openapi_schema:
+  title: Parameters
+  type: object
+  properties:
+    feature_table:
+      title: feature_table
+      default: naive_frequency_features
+      type: string
+    prediction_table:
+      title: prediction_table
+      default: naive_frequency_features_predictions
+      type: string
+    label_col:
+      title: label_col
+      default: label_group
+      type: string
+    model_name:
+      title: model_name
+      default: exercise_prediction_naive_feats_pipe
+      type: string
+    model_stage:
+      title: model_stage
+      default: Production
+      type: string
+  required: null
+  definitions: null
