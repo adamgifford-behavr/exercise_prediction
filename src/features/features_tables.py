@@ -3,7 +3,7 @@
 This module defines the representations of the feature tables in the database. The
 feature tables define the general features that make up the dataset used for model
 building. Currently, the following feature tables exist in the databse:
-    naive_frequency_features
+    - naive_frequency_features
 """
 # pylint:  disable=too-few-public-methods
 from sqlalchemy import Column, DateTime, Float, Integer, Sequence, String
@@ -21,14 +21,16 @@ class NaiveFreqFeats(Base):
 
     __tablename__ = "naive_frequency_features"
 
-    naive_frequency_features_id = Sequence(
+    naive_frequency_features_naive_frequency_features_id_seq = Sequence(
         "naive_frequency_features_naive_frequency_features_id_seq",
         metadata=Base.metadata,
     )
     naive_frequency_features_id = Column(
         Integer,
-        naive_frequency_features_id,
-        server_default=naive_frequency_features_id.next_value(),
+        naive_frequency_features_naive_frequency_features_id_seq,
+        server_default=(
+            naive_frequency_features_naive_frequency_features_id_seq.next_value()
+        ),
         primary_key=True,
     )
     featurize_id = Column(String)

@@ -22,7 +22,12 @@ import sqlalchemy as sa
 from dotenv import find_dotenv, load_dotenv
 from scipy import signal
 from scipy.fftpack import fft, fftshift
+from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.orm import sessionmaker
+
+from src.features.features_tables import NaiveFreqFeats
+
+TABLE_DICT = {"naive_frequency_features": NaiveFreqFeats}
 
 
 def _read_json(file_path: Union[str, Path]) -> dict:
@@ -405,6 +410,49 @@ def delete_existing_dataset(
     sleep(2)
 
 
+def _get_table_model(
+    engine: sa.engine.base.Engine, metadata: sa.sql.schema.MetaData, table_name: str
+) -> sa.sql.schema.Table:
+    """
+    It checks if a table exists in the database, and if it doesn't, it creates it. Finally,
+    it returns a table object representation of the table in the database.
+
+    Args:
+      engine (sa.engine.base.Engine): the engine for the database connection
+      metadata (sa.sql.schema.MetaData): the database metadata
+      table_name (str): str = the name of the table to retrieve
+
+    Returns:
+      A table object
+    """
+    logger = logging.getLogger(__name__)
+    try:
+        table = sa.Table(table_name, metadata, autoload=True)
+    except NoSuchTableError as err:
+        logger.info(
+            "table %s does not currently exist...attempting to create", table_name
+        )
+        table_obj = TABLE_DICT.get(table_name, None)
+        if not table_obj:
+            logger.error(
+                (
+                    "table %s not found in TABLE_DICT. table needs to be imported to "
+                    "`build_features.py` from `features_tables.py` and added to "
+                    "TABLE_DICT. may also require table definition in "
+                    "`features_tables.py`",
+                    table_name,
+                )
+            )
+            raise NoSuchTableError from err
+
+        table_obj.__table__.create(engine)
+        sleep(2)
+        logger.info("table created")
+        table = sa.Table(table_name, metadata, autoload=True)
+
+    return table
+
+
 @click.command()
 @click.argument(
     "features_json",
@@ -479,7 +527,7 @@ def main(
         executemany_batch_page_size=500,
     )
     metadata = sa.schema.MetaData(bind=engine)
-    table = sa.Table(table_name, metadata, autoload=True)
+    table = _get_table_model(engine, metadata, table_name)
 
     prev_feat_id_exists = check_for_existing_id(featurize_id, table, engine)
     if prev_feat_id_exists and overwrite_data:
