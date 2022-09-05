@@ -1,24 +1,39 @@
-"""Code to simulate streaming data to database for stream prediction of exercise"""
-# -*- coding: utf-8 -*-
+"""
+This script simulates sending streaming data to the prediction service
+"""
 import json
-import uuid
+from datetime import datetime
 from time import sleep
 
-from fastparquet import ParquetFile
+import pyarrow.parquet as pq
+import requests  # type: ignore
 
-DATA_SPLIT_JSON = "..\\features\\datafile_group_splits.json"
-with open(DATA_SPLIT_JSON, "r", encoding="utf-8") as infile:
-    data_splits = json.load(infile)
+table = pq.read_table("preprocessed_fileID12_subjID10003_dataID0.parquet")
+data = table.to_pylist()
 
-streaming_file = data_splits["simulate"]
-df = ParquetFile(streaming_file).to_pandas()
 
-# assuming 2 ms per iteration of for loop, this is 1/T to sleep between sending data
-fs = 50 - 0.002
-DT = 1 / fs
+class DateTimeEncoder(json.JSONEncoder):
+    """It converts datetime objects to ISO format."""
 
-for ix, row in df.itterows():
-    row["id"] = str(uuid.uuid4())
-    # send row to SOMETHING
+    def default(self, o):
+        if isinstance(o, datetime):
+            return o.isoformat()
+        return json.JSONEncoder.default(self, o)
 
-    sleep(DT)
+
+with open("target.csv", "w", encoding="utf-8") as f_target:
+    for row in data:
+        if not row["label_group"]:
+            continue
+
+        f_target.write(f"{row['naive_frequency_features_id']},{row['label_group']}\n")
+
+        resp_data = requests.post(
+            "http://127.0.0.1:9696/predict",
+            headers={"Content-Type": "application/json"},
+            data=json.dumps(row, cls=DateTimeEncoder),
+        )
+        print(resp_data)
+        resp = resp_data.json()
+        print(f"prediction: {resp['prediction']}")
+        sleep(3)  # data is preprocessed in 3-s windows

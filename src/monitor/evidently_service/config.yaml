@@ -1,0 +1,87 @@
+datasets:
+  exercise_group:
+    column_mapping:
+      categorical_features: []
+      numerical_features:
+        - "accel_x_0"
+        - "accel_x_1"
+        - "accel_x_2"
+        - "accel_x_4"
+        - "accel_x_5"
+        - "accel_x_7"
+        - "accel_x_9"
+        - "accel_x_12"
+        - "accel_x_16"
+        - "accel_y_0"
+        - "accel_y_1"
+        - "accel_y_2"
+        - "accel_y_3"
+        - "accel_y_4"
+        - "accel_y_5"
+        - "accel_y_6"
+        - "accel_y_7"
+        - "accel_y_8"
+        - "accel_y_9"
+        - "accel_y_10"
+        - "accel_y_11"
+        - "accel_y_12"
+        - "accel_z_0"
+        - "accel_z_1"
+        - "accel_z_2"
+        - "accel_z_3"
+        - "accel_z_4"
+        - "accel_z_5"
+        - "accel_z_8"
+        - "accel_z_12"
+        - "accel_z_14"
+        - "gyro_x_0"
+        - "gyro_x_1"
+        - "gyro_x_2"
+        - "gyro_x_3"
+        - "gyro_x_4"
+        - "gyro_x_5"
+        - "gyro_x_6"
+        - "gyro_x_7"
+        - "gyro_x_8"
+        - "gyro_x_9"
+        - "gyro_x_10"
+        - "gyro_x_11"
+        - "gyro_x_12"
+        - "gyro_x_13"
+        - "gyro_y_0"
+        - "gyro_y_1"
+        - "gyro_y_2"
+        - "gyro_y_3"
+        - "gyro_y_4"
+        - "gyro_y_5"
+        - "gyro_y_6"
+        - "gyro_y_7"
+        - "gyro_y_8"
+        - "gyro_y_10"
+        - "gyro_y_11"
+        - "gyro_z_0"
+        - "gyro_z_1"
+        - "gyro_z_3"
+        - "gyro_z_4"
+        - "gyro_z_5"
+        - "gyro_z_8"
+        - "gyro_z_14"
+        - "gyro_z_17"
+        - "gyro_z_18"
+    target: "label_group"
+    prediction: "prediction"
+    data_format:
+      header: true
+      separator: ","
+    monitors:
+      - data_drift
+      - classification_performance
+      - cat_target_drift
+    reference_file: ./datasets/preprocessed_fileID12_subjID10003_dataID0.parquet
+service:
+  calculation_period_sec: 3
+  min_reference_size: 10
+  moving_reference: false
+  datasets_path: datasets
+  use_reference: true
+  window_size: 6

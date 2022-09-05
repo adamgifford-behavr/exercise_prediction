@@ -22,3 +22,6 @@ good-names = [
 
 [tool.isort]
 multi_line_output  = 3
+
+[tool.mypy]
+exclude = "^app\\.py$"  # exlcude app.py's to avoid duplicate module name error
