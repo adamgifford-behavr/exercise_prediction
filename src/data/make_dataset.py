@@ -167,6 +167,7 @@ def _write_single_parquet_file(
         lambda activity: groupings_actvitiy.get(activity, None)
     )
 
+    # ran into unknown issues with pyarrow, but fastparquet seems to work
     df.to_parquet(interim_filepath, engine="fastparquet")
 
 
