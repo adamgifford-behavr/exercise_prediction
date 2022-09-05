@@ -16,13 +16,13 @@
     "min_samples_leaf",
     "max_features"
   ],
-  "test_limit": 200,
-  "train_limit": 800,
+  "test_limit": null,
+  "train_limit": null,
   "unsearched_parameters": [
     "ccp_alpha",
     "max_leaf_nodes",
     "min_impurity_decrease",
     "min_weight_fraction_leaf"
   ],
-  "validation_limit": 200
+  "validation_limit": null
 }

@@ -28,11 +28,8 @@ from mlflow.entities import ViewType
 from mlflow.tracking import MlflowClient
 from numpy import float64, random
 from sklearn.base import ClassifierMixin
-from sklearn.ensemble import (
-    ExtraTreesClassifier,
-    GradientBoostingClassifier,
-    RandomForestClassifier,
-)
+from sklearn.ensemble import RandomForestClassifier  # NOQA
+from sklearn.ensemble import ExtraTreesClassifier, GradientBoostingClassifier
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.pipeline import Pipeline
 from sqlalchemy.orm import sessionmaker
@@ -235,7 +232,7 @@ def model_search(
     model_name: str,
     fixed_params: Dict[str, Any],
     search_space: Dict[str, Any],
-    X_data: List[pd.DataFrame],
+    x_data: List[pd.DataFrame],
     y_data: List[pd.core.series.Series],
     rstate: Optional[Union[int, float]] = None,
     initial_points: Optional[List[Dict[str, Any]]] = None,
@@ -253,7 +250,7 @@ def model_search(
       every run of the model search.
       search_space (Dict[str, Any]): A dictionary of the search space for each hyperparameter,
       in the format required by hyperopt.
-      X_data (List[pd.DataFrame]): feature data for training and
+      x_data (List[pd.DataFrame]): feature data for training and
       validation, in the form of (X_train, X_val)
       y_data (List[pd.core.series.Series]): label data for training
       and validation, in the form of (y_train, y_val)
@@ -263,7 +260,7 @@ def model_search(
     Returns:
       The best result and the parent run id.
     """
-    X_train, X_val = X_data
+    X_train, X_val = x_data
     y_train, y_val = y_data
 
     def _objective(params: Dict[str, Any]) -> Dict[str, Any]:
@@ -402,7 +399,7 @@ def register_model(run_id: str) -> str:
     Returns:
       The model version
     """
-    model_uri = f"runs:/{run_id}/model"
+    model_uri = f"runs:/{run_id}/models"
     mdl_ver_metadata = mlflow.register_model(model_uri=model_uri, name=EXP_NAME)
     return mdl_ver_metadata.version
 
@@ -624,7 +621,7 @@ def main(
     logger.info("loading complete")
 
     logger.info("performing preprocessing...")
-    X_data = [process_columns(table_name, df) for df in (df_train_meta, df_val_meta)]
+    x_data = [process_columns(table_name, df) for df in (df_train_meta, df_val_meta)]
     y_data = [df_train_meta[label_col], df_val_meta[label_col]]
     logger.info("preprocessing complete")
 
@@ -634,7 +631,7 @@ def main(
         model_name,
         fixed_params,
         search_space,
-        X_data,
+        x_data,
         y_data,
         fmin_rstate,
         initial_points,
@@ -643,9 +640,9 @@ def main(
     logger.info("best parameters: %s", best_params)
 
     logger.info("logging best model in MLflow...")
-    # first elements in X_data and y_data are training...
+    # first elements in x_data and y_data are training...
     best_clf, best_child_id = train_log_best_model(
-        parent_run_id, model_name, best_params, X_data[0], y_data[0]
+        parent_run_id, model_name, best_params, x_data[0], y_data[0]
     )
     logger.info("logging complete...best_child_id=%s", best_child_id)
 
@@ -681,7 +678,10 @@ if __name__ == "__main__":
 
     FEATURE_STORE_URI = os.getenv("FEATURE_STORE_URI", "localhost:5432")
     FEATURE_STORE_PW = os.getenv("FEATURE_STORE_PW")
-    FEATURIZE_ID = os.getenv("FEATURIZE_ID")
+    FEATURIZE_ID = os.getenv(
+        "FEATURIZE_ID",
+        "b924133661c11af1c2c7f560527c03833cec4dfd2202b30afe058b5d61d176e7",
+    )
     EXP_NAME = os.getenv("EXP_NAME", "exercise_prediction_naive_feats")
     DEBUG = os.getenv("DEBUG", "false") == "true"
     DATABASE_URI = (
@@ -690,7 +690,7 @@ if __name__ == "__main__":
     )
 
     MLFLOW_DB_URI = os.getenv("MLFLOW_DB_URI", "localhost:5000")
-    MLFLOW_DB_PW = os.getenv("MLFLOW_DB_PW")
+    # MLFLOW_DB_PW = os.getenv("MLFLOW_DB_PW")
 
     mlflow.set_tracking_uri(f"http://{MLFLOW_DB_URI}")
     if DEBUG:

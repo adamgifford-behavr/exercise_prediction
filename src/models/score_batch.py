@@ -408,15 +408,15 @@ def main(
     and writes the predictions to a table in the database
 
     Args:
-      feature_table (str): str = "naive_frequency_features". Defaults to
-      naive_frequency_features
-      prediction_table (str): str = "naive_frequency_features_predictions". Defaults to
-      naive_frequency_features_predictions
+      feature_table (str): the name of the table in the feature store to load the
+      data for scoring. Defaults to naive_frequency_features
+      prediction_table (str): the name of the table in the feature store to log the
+      predictions. Defaults to naive_frequency_features_predictions
       label_col (str): The name of the column in the feature table that contains the label.
       Defaults to label_group
-      model_name (str): str = "exercise_prediction_naive_feats_pipe". Defaults to
+      model_name (str): the name of the model in the model registry. Defaults to
       exercise_prediction_naive_feats_pipe
-      model_stage (str): str = "Production". Defaults to Production
+      model_stage (str): the stage of the model in the model registry. Defaults to Production
     """
     logger = logging.getLogger(__name__)
 
@@ -459,6 +459,6 @@ if __name__ == "__main__":
     )
 
     MLFLOW_DB_URI = os.getenv("MLFLOW_DB_URI", "localhost:5000")
-    MLFLOW_DB_PW = os.getenv("MLFLOW_DB_PW")
+    # MLFLOW_DB_PW = os.getenv("MLFLOW_DB_PW")
 
     main()

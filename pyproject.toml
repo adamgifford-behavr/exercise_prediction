@@ -19,3 +19,6 @@ good-names = [
     "X_val",
     "X_test"
 ]
+
+[tool.isort]
+multi_line_output  = 3
