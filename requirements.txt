@@ -1,0 +1,35 @@
+# local package
+-e .
+
+# external requirements
+bandit
+boto3
+click
+coverage
+dataclasses
+evidently
+fastparquet
+flask
+hyperopt
+isort
+jupyterlab
+mlflow
+mypy
+nbdime
+pandas
+pre_commit
+prefect
+prometheus-client
+psycopg2-binary
+pyarrow
+pylint
+pymongo
+pytest
+python-dotenv
+pyyaml
+requests
+scikit-learn
+sphinx
+sqlalchemy
+werkzeug
+
