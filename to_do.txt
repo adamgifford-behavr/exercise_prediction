@@ -1,6 +1,0 @@
-1. modify make_dataset to:
-    a. download mat file from s3 bucket
-    b. store interim PARQUET files in s3
-2. modify build_features to:
-    a. read parquet files from s3
-    b. write features dataset to aws rds
