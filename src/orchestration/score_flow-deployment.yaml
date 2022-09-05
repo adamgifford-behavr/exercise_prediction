@@ -17,7 +17,7 @@ description: |-
     to exercise_prediction_naive_feats_pipe
     model_stage (str): The stage of the registered model in the registry.
     Defaults to Production
-version: b54f8cb0edc569c6ea8f4e4e8d610d8f
+version: ac5bf548d0282e4f692b7007b378164d
 # The work queue that will handle this deployment's runs
 work_queue_name: manual_scoring_flow
 tags: []

@@ -3,14 +3,40 @@
 This module defines the Prefect flow for orchestrating model training, using the
 functions and methods defined in src.models.train_model.
 """
+import os
 from typing import Any, Dict, List, Optional, Union
 
+import mlflow
+from mlflow.tracking import MlflowClient
 from prefect import flow, get_run_logger, task
 from prefect.task_runners import SequentialTaskRunner
 
 import src.models.train_model as tm
 
 ALL_SEARCH_PARAMS = tm.ALL_SEARCH_PARAMS
+
+FEATURE_STORE_URI = os.getenv("FEATURE_STORE_URI", "localhost")
+FEATURE_STORE_PW = os.getenv("FEATURE_STORE_PW")
+DATABASE_URI = (
+    f"postgresql+psycopg2://postgres:{FEATURE_STORE_PW}@{FEATURE_STORE_URI}"
+    "/feature_store"
+)
+EXP_NAME = os.getenv("EXP_NAME", "exercise_prediction_naive_feats")
+DEBUG = os.getenv("DEBUG", "false") == "true"
+
+# MLFLOW_DB_PW = os.getenv("MLFLOW_DB_PW")
+
+tm.DATABASE_URI = DATABASE_URI
+tm.MLFLOW_DB_URI = os.getenv("MLFLOW_DB_URI", "localhost:5000")
+tm.FEATURIZE_ID = os.getenv("FEATURIZE_ID")
+
+mlflow.set_tracking_uri(f"http://{tm.MLFLOW_DB_URI}")
+if DEBUG:
+    EXP_NAME = EXP_NAME + "_debug"
+
+
+EXP_ID = dict(mlflow.get_experiment_by_name(EXP_NAME))["experiment_id"]
+CLIENT = MlflowClient(f"http://{tm.MLFLOW_DB_URI}")
 
 load_data = task(tm.load_data, name="Data Loading")
 process_columns = task(tm.process_columns, name="Preprocessing")
@@ -52,6 +78,8 @@ def train_flow(
       contains starting points for hyperparameter values for fitting procedure (e.g., to
       use values from previous fit to potentially speed up fitting). Defaults to None
     """
+
+    mlflow.set_experiment(EXP_NAME)
 
     logger = get_run_logger()
     logger.info("loading metadata")

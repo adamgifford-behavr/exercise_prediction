@@ -22,8 +22,11 @@ DATABASE_URI = (
     "/feature_store"
 )
 
-MLFLOW_DB_URI = os.getenv("MLFLOW_DB_URI", "localhost:5000")
-MLFLOW_DB_PW = os.getenv("MLFLOW_DB_PW")
+# MLFLOW_DB_PW = os.getenv("MLFLOW_DB_PW")
+
+sb.DATABASE_URI = DATABASE_URI
+sb.MLFLOW_DB_URI = os.getenv("MLFLOW_DB_URI", "localhost:5000")
+sb.FEATURIZE_ID = os.getenv("FEATURIZE_ID")
 
 load_data = task(sb.load_data, name="Load batch data")
 apply_model = task(sb.apply_model, name="Apply model")
