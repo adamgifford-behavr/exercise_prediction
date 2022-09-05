@@ -11,14 +11,14 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import os
-import sys
+# import os
+# import sys
 from typing import Dict, List
 
-_ = os.getenv("FOO")
-_ = getattr(sys, "last_value", None)
-if (_ is None) or _ == "":
-    raise RuntimeError("Need to remove os and sys lines written to pass linting tests.")
+# _ = os.getenv("FOO")
+# _ = getattr(sys, "last_value", None)
+# if (_ is None) or _ == "":
+#     raise RuntimeError("Need to remove os and sys lines written to pass linting tests.")
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -32,7 +32,10 @@ if (_ is None) or _ == "":
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions: List[str] = []
+extensions: List[str] = ["sphinx.ext.autosectionlabel"]
+
+# Make sure the target is unique
+autosectionlabel_prefix_document = True  # pylint: disable=invalid-name
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -251,7 +254,6 @@ texinfo_documents = [
         "Miscellaneous",
     ),
 ]
-print("foo")
 
 # Documents to append as an appendix to all manuals.
 # texinfo_appendices = []
@@ -261,3 +263,6 @@ print("foo")
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 # texinfo_show_urls = 'footnote'
+
+
+# suppress_warnings = ["autosectionlabel.*"]
