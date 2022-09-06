@@ -16,7 +16,6 @@ from typing import Any, Dict, Generator, Iterable, Tuple, Union
 
 import click
 import numpy as np
-import numpy.matlib
 import pandas as pd
 import sqlalchemy as sa
 from dotenv import find_dotenv, load_dotenv
@@ -74,7 +73,7 @@ def _calculate_spectrum(ndarray: np.ndarray) -> np.ndarray:
       The return value is a numpy array of the same shape as the input array.
     """
     X_w = fftshift(fft(ndarray, axis=0), axes=0)
-    return np.abs(X_w / numpy.matlib.repmat(abs(X_w).max(axis=0), ndarray.shape[0], 1))
+    return np.abs(X_w / np.tile(abs(X_w).max(axis=0), (ndarray.shape[0], 1)))
 
 
 def _get_frequencies_indices(
@@ -186,7 +185,7 @@ def _make_single_window_df(
     # pylint: disable=too-many-arguments
     data = {
         "featurize_id": [featurize_id],
-        "file": [df_file],
+        "file": [str(df_file)],
         "dataset_group": [dataset_group],
         "added_datetime": [pd.to_datetime("now", utc=True)],
         "window_size": [n_fft],
@@ -212,7 +211,7 @@ def _make_single_window_df(
 #       A window function.
 #     """
 #     if "hann" in window_name.lower():
-#         window = numpy.matlib.repmat(signal.hann(n_fft), n_cols, 1).T
+#         window = np.tile(signal.hann(n_fft), (n_cols, 1)).T
 #     else:
 #         raise ValueError(f"window_name {window_name} not instantiated")
 #     return window
@@ -264,7 +263,7 @@ def calculate_windowed_feats(
     measurement_cols = list(features.keys())
 
     # window = _generate_window_fxn(metaparams["window"], n_fft, len(measurement_cols))
-    window = numpy.matlib.repmat(signal.hann(n_fft), len(measurement_cols), 1).T
+    window = np.tile(signal.hann(n_fft), (len(measurement_cols), 1)).T
 
     freq = _calculate_frequencies(n_fft)
     freq_ixs = [
