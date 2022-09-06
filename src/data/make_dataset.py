@@ -23,7 +23,7 @@ import json
 import logging
 from collections import defaultdict
 from pathlib import Path
-from typing import DefaultDict, Dict, Generator, List, Tuple, Union
+from typing import Dict, Generator, List, Tuple, Union
 
 import click
 import numpy as np
@@ -125,7 +125,7 @@ def _write_json(file_path: Union[str, Path], data: dict) -> None:
 
 def _write_single_parquet_file(
     interim_filepath: Union[str, Path],
-    subj_data: sio.matlab.mio5_params.mat_struct,
+    subj_data: sio.matlab.mat_struct,
     data_id: int,
 ) -> None:
     """
@@ -171,6 +171,49 @@ def _write_single_parquet_file(
     df.to_parquet(interim_filepath, engine="fastparquet")
 
 
+def _fix_activity_groupings(activity_groupings: dict) -> dict:
+    all_acts = [v_ix for val in activity_groupings.values() for v_ix in val]
+    # there are a couple of duplicated activities
+    all_acts = sorted(list(set(all_acts)))
+
+    fixed_groupings = defaultdict(list)
+    fixed_groupings["Non-exercise"] = ["Non-Exercise", "Device on Table", "Rest"]
+    fixed_groupings["Machines"] = ["Elliptical machine", "Rowing machine", "Cycling"]
+    fixed_groupings["Junk"] = ["Arm Band Adjustment", "Arm straight up"]
+
+    used_acts = []
+    used_acts.extend(fixed_groupings["Non-exercise"])
+    used_acts.extend(fixed_groupings["Machines"])
+    used_acts.extend(fixed_groupings["Junk"])
+    for act in all_acts:
+        if "left" in act:
+            fixed_groupings["Left-hand repetitive exercise"].append(act)
+        elif "right" in act:
+            fixed_groupings["Right-hand repetitive exercise"].append(act)
+        elif "Running" in act:
+            fixed_groupings["Run"].append(act)
+        elif "tretch" in act:
+            fixed_groupings["Stretching"].append(act)
+        elif ("Walk" in act) and ("lunge" not in act):
+            fixed_groupings["Walk"].append(act)
+        elif ("Plank" in act) or ("Boat" in act) or act == "Wall Squat":
+            fixed_groupings["Static exercise"].append(act)
+        elif "lunge" in act.lower():
+            fixed_groupings["Repetitive non-arm exercise"].append(act)
+        elif (
+            ("Unl" in act)
+            or (act == "Note")
+            or ("Tap" in act)
+            or ("Act" in act)
+            or ("Inv" in act)
+        ):
+            fixed_groupings["Junk"].append(act)
+        elif act not in used_acts:
+            fixed_groupings["Repetitive exercise"].append(act)
+
+    return fixed_groupings
+
+
 def _write_activity_groupings_json(useful_activity_groupings: np.ndarray) -> None:
     """
     It takes the useful activity groupings data and writes them to a JSON file
@@ -180,10 +223,11 @@ def _write_activity_groupings_json(useful_activity_groupings: np.ndarray) -> Non
         `array([group_name, array([labels for this group]]))`
     """
     activity_groupings = {row[0]: row[1].tolist() for row in useful_activity_groupings}
+    activity_groupings = _fix_activity_groupings(activity_groupings)
     _write_json(ACTIVITY_GROUPS_FILE, activity_groupings)
 
 
-def _make_files_dict(all_files: list) -> DefaultDict[str, list]:
+def _make_files_dict(all_files: list) -> Dict[str, list]:
     """
     It takes a list of file paths and returns a dictionary of subject names and the list of
     data id numbers associated with each subject
@@ -206,7 +250,7 @@ def _make_files_dict(all_files: list) -> DefaultDict[str, list]:
 
 
 def _get_first_subjs_match_crit(
-    files_dict: DefaultDict[str, list], n_sing_file: int, n_double_file: int
+    files_dict: Dict[str, list], n_sing_file: int, n_double_file: int
 ) -> list:
     """
     It takes a dictionary of subject IDs and a list of files associated with each subject
@@ -214,7 +258,7 @@ def _get_first_subjs_match_crit(
     either one (`n_sing_file`) or two (`n_double_file`) data files associated with them
 
     Args:
-      files_dict (DefaultDict[str, list]): a dictionary of subject IDs and the list of
+      files_dict (Dict[str, list]): a dictionary of subject IDs and the list of
       file ids they have.
       n_sing_file (int): number of subjects with only one file to include in the test
       dataset
@@ -243,13 +287,13 @@ def _get_first_subjs_match_crit(
 
 def _make_train_test_dict(
     all_files: List[Path], test_subj_ids: list, sim_subj_ids: list
-) -> DefaultDict[str, list]:
+) -> Dict[str, list]:
     """
     It takes a dictionary of file paths and splits them into three lists, one for training,
     one for testing, and one for deployment simulation.
 
     Args:
-      all_files (DefaultDict[str, list]): a list of all the files in the directory
+      all_files (Dict[str, list]): a list of all the files in the directory
       test_subj_ids (list): list of subject IDs to use for testing
 
     Returns:
