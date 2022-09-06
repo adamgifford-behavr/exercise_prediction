@@ -221,7 +221,7 @@ def _get_named_classifier(model_name: str, params: Dict[str, Any]) -> Classifier
         "gradientboostingclassifier": GradientBoostingClassifier,
     }
 
-    classifier = classifiers[model_name]
+    classifier = classifiers[model_name.lower()]
     clf = classifier(**params)
     d_v = DictVectorizer()
     pipe = Pipeline([("dv", d_v), ("clf", clf)])
