@@ -88,7 +88,8 @@ quality_checks:
 
 ## code testing
 code_tests:
-	coverage run -m pytest tests/
+	coverage run -m pytest tests/ --disable-warnings
+	coverage report -m
 
 ## Delete all compiled Python files
 clean:

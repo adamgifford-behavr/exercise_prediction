@@ -1,6 +1,7 @@
 [tool.pylint.'MESSAGES CONTROL']
 max-line-length = 95
 disable = "duplicate-code"
+ignore = "tests"
 
 [tool.pylint.BASIC]
 good-names = [
@@ -24,4 +25,16 @@ good-names = [
 multi_line_output  = 3
 
 [tool.mypy]
-exclude = "^app\\.py$"  # exlcude app.py's to avoid duplicate module name error
+exclude = [
+    "tests/*",
+    "^app\\.py$"  # exlcude app.py's to avoid duplicate module name error
+]
+
+[tool.bandit]
+exclude_dirs = ["tests/"]
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::DeprecationWarning:past.*:",
+    "ignore::DeprecationWarning:pywintypes:"
+]
