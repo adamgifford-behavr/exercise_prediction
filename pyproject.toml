@@ -38,3 +38,11 @@ filterwarnings = [
     "ignore::DeprecationWarning:past.*:",
     "ignore::DeprecationWarning:pywintypes:"
 ]
+
+[tool.coverage.run]
+omit = [
+    "tests/*",
+]
+
+[tool.coverage.report]
+show_missing = true
