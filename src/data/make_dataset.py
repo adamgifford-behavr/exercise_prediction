@@ -768,6 +768,7 @@ def make_data_splits_json(
     interim_path: str,
     test_split_criteria: Dict[str, int],
     val_split_criteria: Dict[str, int],
+    overwrite_output: bool,
 ) -> None:
     """
     This function akes in the path to the interim data folder, the test split criteria,
@@ -813,13 +814,15 @@ def make_data_splits_json(
       "n_5_files" is the number of subjects with 5 data recordings in the validation set,
       "n_files_tol" is the tolerance on the total number of files in the validation set,
       used to try to satisfy all constraints.
+      overwrite_output (bool): Whether to overwrite any preexisting DATA_GROUP_SPLITS
+      json file
     """
     logger = logging.getLogger(__name__)
-    if not DATA_GROUP_SPLITS.exists():
+    if (not DATA_GROUP_SPLITS.exists()) or overwrite_output:
         logger.info(
             (
                 "json file for splitting files into groups (e.g., train, test, etc.) does "
-                "not exist. writing file first..."
+                "not exist or overwrite setting is on. writing file first..."
             )
         )
         train_test_files = _make_train_test_sim_split(
@@ -916,7 +919,9 @@ def main(
     val_split_criteria = _read_json(val_crit_filepath)
     # remove comment from json data if it exists
     val_split_criteria.pop("_comment", None)
-    make_data_splits_json(output_path, test_split_criteria, val_split_criteria)
+    make_data_splits_json(
+        output_path, test_split_criteria, val_split_criteria, overwrite_output
+    )
     logger.info("dataset creation complete...")
 
 
