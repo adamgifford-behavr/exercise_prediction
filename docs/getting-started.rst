@@ -629,14 +629,7 @@ pinging the `evidently` service to monitor performance. It requires a build with
 Quickstart
 ^^^^^^^^^^
 
-First, copy the serialized classifier file `exercise_prediction/models/model.pkl` to
-`src/monitor/prediction_service`:
-
-.. code-block:: console
-
-    (exercise_prediction) $ cp models/model.pkl src/monitor/
-
-Next, to start the `evidently` and `prediction` services, run one of the following to
+To start the `evidently` and `prediction` services, run one of the following to
 build and start the docker containers:
 
 .. code-block:: console
@@ -647,6 +640,7 @@ or
 
 .. code-block:: console
 
+    (exercise_prediction) $ cp models -r src/monitor/prediction_service
     (exercise_prediction) $ cd src/monitor
     (exercise_prediction) $ python prepare.py
     (exercise_prediction) $ docker-compose up
@@ -669,13 +663,15 @@ to test the monitoring functionality without running through the rest of the pip
 .. note::
 
     If you would like to test your own model created during your run-through of the
-    pipeline, you must manually copy your `model.pkl` (or similarly saved model file)
-    from your model registry/artifact store into `src/monitor/prediction_service/`. If
-    your file is not named `model.pkl`, you will need to modify
-    `src/monitor/prediction_service/Dockerfile` to copy over the correctly named model
-    file to the container and either create an environment variable in the container with
-    the new name of the model file or modify `src.monitor.prediction_service.app.py`
-    to set the correct default value for ``MODEL_FILE``.
+    pipeline, you must manually copy your `models` (or similarly saved model folder)
+    from your model registry/artifact store into `src/monitor/prediction_service/`. The
+    prediction services uses ``mlflow.pyfunc.load_model()`` under the hood, so the contents
+    of the `models` folder should conform to the requirements necessary for MLflow. The
+    prediction service is designed to connect to an S3 bucket if you'd prefer to load the
+    model from S3. In order to do that, you must fill in the `environment` variables
+    ``MODEL_LOCATION``, ``AWS_ACCESS_KEY_ID``, ``AWS_SECRET_ACCESS_KEY``, and
+    ``AWS_DEFAULT_REGION`` in `src/monitor/docker-compose.yml`, where ``MODEL_LOCATION``
+    is the full s3 path to your `models` folder.
 
 Testing
 -------
