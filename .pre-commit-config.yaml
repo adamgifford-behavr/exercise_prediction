@@ -46,10 +46,11 @@ repos:
         entry: pylint
         language: system
         types: [python]
-        exclude: ^tests/
+        exclude: tests/*
         args: [
             "-rn", # Only display messages
             "-sn", # Don't display the score
+
           ]
       - id: bandit
         name: bandit
@@ -59,19 +60,19 @@ repos:
         language_version: python3
         types: [python]
         args: ["-x", "tests"]
-      - id: pytest
-        name: pytest
-        entry: coverage run -m pytest tests
-        stages: [commit]
-        types: [python]
-        language: system
-        pass_filenames: false
-        always_run: true
-      - id: coverage
-        name: coverage report
-        entry: coverage html -d htmlcov --show-contexts --skip-empty
-        stages: [commit]
-        types: [python]
-        language: system
-        pass_filenames: false
-        always_run: true
+      # - id: pytest
+      #   name: pytest
+      #   entry: coverage run -m pytest tests
+      #   stages: [commit]
+      #   types: [python]
+      #   language: system
+      #   pass_filenames: false
+      #   always_run: true
+      # - id: coverage
+      #   name: coverage report
+      #   entry: coverage html -d htmlcov --show-contexts --skip-empty
+      #   stages: [commit]
+      #   types: [python]
+      #   language: system
+      #   pass_filenames: false
+      #   always_run: true

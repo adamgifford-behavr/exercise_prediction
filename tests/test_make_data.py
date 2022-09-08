@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 from deepdiff import DeepDiff
@@ -56,7 +57,9 @@ def test_make_data_splits():
         n_5_files=0,
         n_files_tol=1,
     )
-    md.make_data_splits_json(interim_path, test_split_criteria, val_split_criteria)
+    md.make_data_splits_json(
+        interim_path, test_split_criteria, val_split_criteria, True
+    )
     actual_result = read_json(md.DATA_GROUP_SPLITS)
     expected_result = read_json(PROJDIR / "src/features/datafile_group_splits.json")
 
@@ -64,7 +67,7 @@ def test_make_data_splits():
     # src/data and actual_result uses absolute paths via Path()
     for key, files in actual_result.items():
         for file in files:
-            filename = file.split("\\")[-1]
+            filename = file.split(os.sep)[-1]
             # this checks that all files in each actual key are in the respected expected
             # key
             assert any(

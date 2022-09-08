@@ -6,7 +6,7 @@ bandit
 boto3
 click
 coverage
-dataclasses
+deepdiff
 evidently
 fastparquet
 flask
@@ -17,8 +17,9 @@ mlflow
 mypy
 nbdime
 pandas
+pipenv
 pre_commit
-prefect
+prefect==2.2
 prometheus-client
 psycopg2-binary
 pyarrow

@@ -1,11 +1,14 @@
 import json
+import os
 from pathlib import Path
 
 import pytest
 from deepdiff import DeepDiff
+from dotenv import find_dotenv, load_dotenv
 
 import src.features.build_features as bf
 
+load_dotenv(find_dotenv())
 PROJDIR = Path(__file__).resolve().parents[1]
 TABLE_COLUMNS = [
     "featurize_id",
@@ -97,7 +100,7 @@ def test_generate_featurize_id():
     metaparams = read_json(PROJDIR / "src/features/metaparams.json")
 
     actual_result = bf._generate_featurize_id(datafile_splits, metaparams)
-    expected_result = "b924133661c11af1c2c7f560527c03833cec4dfd2202b30afe058b5d61d176e7"
+    expected_result = os.getenv("FEATURIZE_ID")
 
     assert (
         actual_result == expected_result
@@ -116,7 +119,7 @@ def test_generate_featurize_id():
 # for testing as these are not relevant
 @pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_calculate_windowed_feats():
-    featurize_id = "b924133661c11af1c2c7f560527c03833cec4dfd2202b30afe058b5d61d176e7"
+    featurize_id = os.getenv("FEATURIZE_ID")
     dataset_group = "train"
     df_file = PROJDIR / "data/interim/fileID1_subjID3_dataID0.parquet"
     features = read_json(PROJDIR / "src/features/frequency_features.json")

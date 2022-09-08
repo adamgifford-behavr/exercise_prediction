@@ -8,7 +8,7 @@ PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 # BUCKET = exercise-prediction/
 # PROFILE = C:\Users\adamgifford_behavr.DESKTOP-PQU0D8M\.aws\config
 BUCKET = ${S3_BUCKET}
-PROFILE = ${AWS_CONFIG_PATH}
+PROFILE = ${AWS_PROFILE}
 PROJECT_NAME = exercise_prediction
 
 ifeq (,$(shell which conda))
@@ -21,21 +21,41 @@ endif
 # COMMANDS                                                                      #
 #################################################################################
 
+## Test python environment is set up correctly
+test_environment:
+	python test_environment.py
+
+## Set up python interpreter environment
+create_environment: test_environment
+ifeq (True,$(HAS_CONDA))
+		@echo ">>> Detected conda, creating conda environment."
+		conda create --name $(PROJECT_NAME) python=3.10
+		@echo ">>> New conda env created. Activate with:\nsource activate $(PROJECT_NAME)"
+else
+	python -m pip install -q virtualenv virtualenvwrapper
+	@echo ">>> Installing virtualenvwrapper if not already installed.\nMake sure the following lines are in shell startup file\n\
+	export WORKON_HOME=$$HOME/.virtualenvs\nexport PROJECT_HOME=$$HOME/Devel\nsource /usr/local/bin/virtualenvwrapper.sh\n"
+	@bash -c "source `which virtualenvwrapper.sh`;mkvirtualenv $(PROJECT_NAME) --python=python3"
+	@echo ">>> New virtualenv created. Activate with:\nworkon $(PROJECT_NAME)"
+endif
+
 ## Install Python Dependencies
-requirements: test_environment
+requirements:
 	python -m pip install -U pip setuptools wheel
 	python -m pip install -r requirements.txt
+	pre-commit install
 
 ## Make Dataset
-data: requirements
+data:
 	python src/data/make_dataset.py \
 		data/raw/exercise_data.50.0000_multionly.mat \
 		data/interim/ \
 		src/data/val_split_crit.json \
-		src/data/test_split_crit.json
+		src/data/test_split_crit.json \
+		--overwrite-output
 
 ## Build features
-features: data
+features:
 	python src/features/build_features.py \
 		src/features/frequency_features.json \
 		src/features/datafile_group_splits.json \
@@ -43,34 +63,40 @@ features: data
 
 
 ## run standalone training
-stand_alone_train: features
+stand_alone_train:
 	python src/models/train_model.py \
 		naive_frequency_features \
 		label_group \
 		src/models/model_search.json
 
+## create smaller venvs in folders with a Pipfile (to test minimal requirements)
+pipenv:
+	pipenv install --dev
+	pre-commit install
+
 ## orchestrate training
-deploy_train: features
-	cd src/orchestration
+orchestrate_train:
+	cd src/orchestration ; \
 	prefect deployment build \
 		orchestrate_train.py:train_flow \
 		-n 'Main Model-Training Flow' \
-		-q 'scheduled_training_flow'
-	prefect deployment apply .\train_flow-deployment.yaml
-	prefect agent start -q 'scheduled_training_flow'
+		-q 'manual_training_flow' ; \
+	prefect deployment apply train_flow-deployment.yaml ; \
+	prefect agent start -q 'manual_training_flow'
 
 ## run standalone training
-stand_alone_score_batch: stand_alone_train
+stand_alone_score_batch:
 	python src/models/score_batch.py
 
 ## orchestrate batch scoring
-deploy_score_batch: deploy_train
+orchestrate_score_batch:
+	cd src/orchestration ; \
 	prefect deployment build \
-		src/orchestration/orchestrate_score_batch.py:score_flow \
+		orchestrate_score_batch.py:score_flow \
 		-n 'Main Model-Scoring Flow' \
-		-q 'scheduled_scoring_flow'
-	prefect deployment apply .\score_flow-deployment.yaml
-	prefect agent start -q 'scheduled_scoring_flow'
+		-q 'manual_scoring_flow' ; \
+	prefect deployment apply score_flow-deployment.yaml ; \
+	prefect agent start -q 'manual_scoring_flow'
 
 ## simulate streaming monitoring service
 docker_monitor:
@@ -112,24 +138,6 @@ ifeq (default,$(PROFILE))
 else
 	aws s3 sync s3://$(BUCKET)/data/ data/ --profile $(PROFILE)
 endif
-
-## Set up python interpreter environment
-create_environment:
-ifeq (True,$(HAS_CONDA))
-		@echo ">>> Detected conda, creating conda environment."
-		conda create --name $(PROJECT_NAME) python=3.10
-		@echo ">>> New conda env created. Activate with:\nsource activate $(PROJECT_NAME)"
-else
-	python -m pip install -q virtualenv virtualenvwrapper
-	@echo ">>> Installing virtualenvwrapper if not already installed.\nMake sure the following lines are in shell startup file\n\
-	export WORKON_HOME=$$HOME/.virtualenvs\nexport PROJECT_HOME=$$HOME/Devel\nsource /usr/local/bin/virtualenvwrapper.sh\n"
-	@bash -c "source `which virtualenvwrapper.sh`;mkvirtualenv $(PROJECT_NAME) --python=python3"
-	@echo ">>> New virtualenv created. Activate with:\nworkon $(PROJECT_NAME)"
-endif
-
-## Test python environment is set up correctly
-test_environment:
-	python test_environment.py
 
 #################################################################################
 # PROJECT RULES                                                                 #
