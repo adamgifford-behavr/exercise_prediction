@@ -17,15 +17,16 @@ import src.models.score_batch as sb
 load_dotenv(find_dotenv())
 FEATURE_STORE_URI = os.getenv("FEATURE_STORE_URI", "localhost")
 FEATURE_STORE_PW = os.getenv("FEATURE_STORE_PW")
-DATABASE_URI = (
-    f"postgresql+psycopg2://postgres:{FEATURE_STORE_PW}@{FEATURE_STORE_URI}"
-    "/feature_store"
-)
+DATABASE_URI = f"postgresql+psycopg2://postgres:{FEATURE_STORE_PW}@{FEATURE_STORE_URI}"
+sb.MODEL_NAME = os.getenv("EXP_NAME")
+DEBUG = os.getenv("DEBUG", "false") == "true"
+if DEBUG:
+    sb.MODEL_NAME = sb.MODEL_NAME + "_debug"
 
 # MLFLOW_DB_PW = os.getenv("MLFLOW_DB_PW")
 
 sb.DATABASE_URI = DATABASE_URI
-sb.MLFLOW_DB_URI = os.getenv("MLFLOW_DB_URI", "localhost:5000")
+sb.MLFLOW_TRACKING_SERVER = os.getenv("MLFLOW_TRACKING_SERVER", "localhost:5000")
 sb.FEATURIZE_ID = os.getenv("FEATURIZE_ID")
 
 load_data = task(sb.load_data, name="Load batch data")
@@ -40,7 +41,6 @@ def score_flow(
     feature_table: str = "naive_frequency_features",
     prediction_table: str = "naive_frequency_features_predictions",
     label_col: str = "label_group",
-    model_name: str = "exercise_prediction_naive_feats_pipe",
     model_stage: str = "Production",
 ) -> None:
     """
@@ -54,8 +54,6 @@ def score_flow(
       Defaults to naive_frequency_features_predictions
       label_col (str): The name of the column in the feature table that contains the label
       to be predicted. Defaults to label_group
-      model_name (str): The name of the MLflow registered model you want to use. Defaults
-      to exercise_prediction_naive_feats_pipe
       model_stage (str): The stage of the registered model in the registry.
       Defaults to Production
     """
@@ -66,8 +64,7 @@ def score_flow(
     logger.info("loading complete")
 
     logger.info("applying model to batch data...")
-    model_data = {"name": model_name, "stage": model_stage}
-    pred_df = apply_model(model_data, df_test_meta, feature_table, label_col)
+    pred_df = apply_model(model_stage, df_test_meta, feature_table, label_col)
     logger.info("model applied")
 
     logger.info("writing predictions to %s...", prediction_table)

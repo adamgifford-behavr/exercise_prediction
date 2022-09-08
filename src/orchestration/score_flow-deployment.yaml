@@ -1,7 +1,7 @@
 ###
 ### A complete description of a Prefect Deployment for flow 'Model Batch Scoring'
 ###
-name: Exercise Group-Naive Features Batch Scoring
+name: Main Model-Scoring Flow
 description: |-
   It loads data from `feature_table`, applies a model to the data, and writes the
   predictions to a `prediction_table`.
@@ -17,13 +17,19 @@ description: |-
     to exercise_prediction_naive_feats_pipe
     model_stage (str): The stage of the registered model in the registry.
     Defaults to Production
-version: ac5bf548d0282e4f692b7007b378164d
+version: d94440d589267cdf6f4f26cfd6ed5931
 # The work queue that will handle this deployment's runs
 work_queue_name: manual_scoring_flow
 tags: []
 parameters: {}
 schedule: null
 infra_overrides: {}
+
+###
+### DO NOT EDIT BELOW THIS LINE
+###
+flow_name: Model Batch Scoring
+manifest_path: null
 infrastructure:
   type: process
   env: {}
@@ -34,14 +40,11 @@ infrastructure:
   - -m
   - prefect.engine
   stream_output: true
-
-###
-### DO NOT EDIT BELOW THIS LINE
-###
-flow_name: Model Batch Scoring
-manifest_path: null
+  _block_document_id: c07b47e4-ece4-4a47-8d2b-4188a283e673
+  _block_document_name: anonymous-82665961-ca96-4c88-b2af-26a22df44656
+  _is_anonymous: true
 storage: null
-path: C:\Users\adamgifford_behavr.DESKTOP-PQU0D8M\Documents\DataScience\PersonalProjects\exercise_prediction\src\orchestration
+path: /home/ubuntu/exercise_prediction/src/orchestration
 entrypoint: orchestrate_score_batch.py:score_flow
 parameter_openapi_schema:
   title: Parameters
@@ -58,10 +61,6 @@ parameter_openapi_schema:
     label_col:
       title: label_col
       default: label_group
-      type: string
-    model_name:
-      title: model_name
-      default: exercise_prediction_naive_feats_pipe
       type: string
     model_stage:
       title: model_stage

@@ -1,7 +1,7 @@
 ###
 ### A complete description of a Prefect Deployment for flow 'Model Training'
 ###
-name: Exercise Group-Naive Features Predictions Training
+name: Main Model-Training Flow
 description: |-
   This function loads the data, performs a search over the hyperparameters using hyperopt,
   and then trains the best model on the training data and tests it on the test data.
@@ -17,13 +17,19 @@ description: |-
     initial_points_json (Optional[str]): This is the path to the JSON file that
     contains starting points for hyperparameter values for fitting procedure (e.g., to
     use values from previous fit to potentially speed up fitting). Defaults to None
-version: 67a65c9b93f0fc7429209c426553f74d
+version: 481236fd92706ab576b36a8c18f950fe
 # The work queue that will handle this deployment's runs
-work_queue_name: manual_training_flow
+work_queue_name: scheduled_training_flow
 tags: []
 parameters: {}
 schedule: null
 infra_overrides: {}
+
+###
+### DO NOT EDIT BELOW THIS LINE
+###
+flow_name: Model Training
+manifest_path: null
 infrastructure:
   type: process
   env: {}
@@ -34,14 +40,11 @@ infrastructure:
   - -m
   - prefect.engine
   stream_output: true
-
-###
-### DO NOT EDIT BELOW THIS LINE
-###
-flow_name: Model Training
-manifest_path: null
+  _block_document_id: 2d3ee63d-7833-44b5-9428-b445ca0536ec
+  _block_document_name: anonymous-38b34e9f-bc16-4754-afbe-e4a32a46ffcc
+  _is_anonymous: true
 storage: null
-path: C:\Users\adamgifford_behavr.DESKTOP-PQU0D8M\Documents\DataScience\PersonalProjects\exercise_prediction\src\orchestration
+path: /home/ubuntu/exercise_prediction/src/orchestration
 entrypoint: orchestrate_train.py:train_flow
 parameter_openapi_schema:
   title: Parameters
