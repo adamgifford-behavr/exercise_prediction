@@ -95,3 +95,7 @@ target/
 
 # MLflow metadata
 **/mlruns
+
+# system-specific config files
+**/*-deployment.yaml
+**/*-deployment.yaml
