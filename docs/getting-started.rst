@@ -442,7 +442,20 @@ For orchestrated model training, you also need start a Prefect server:
         PREFECT_ORION_UI_API_URL="http://<external-ip>:4200/api"
     (exercise_prediction) $ prefect orion start --host 0.0.0.0
 
-Next, you can deploy the orchestration using either:
+Next, you have the option to set up a cloud storage block to log flow run data. Follow
+the instructions from `this site <https://docs.prefect.io/tutorials/storage/>`_ if you
+would like to use remote storage for the deployment.
+
+If you created a remote storage-block, create the following environment variable:
+
+.. code-block:: console
+
+    (exercise_prediction) $ export PREFECT_TRAIN_SB=<block_type>/<block_name>
+
+where ``block_type`` is the type of remote storage you used (e.g., "s3") and ``block_name``
+is the name of the block you created.
+
+Finally, run either of the following commands to create and deploy the orchestration:
 
 .. code-block:: console
 
@@ -468,6 +481,9 @@ is a copy of ``train_model.main()`` with Prefect flow and task decorators. As su
 requires the same input parameters. The first 3 (``table_name``, ``label_col``, and
 ``model_search_json``) are provided by default in the function. The final optional parameter
 (``initial_points_json``) would need to be provided at flow run time.
+
+If you do not provide a remote storage-block location, the commands will default to using
+local storage.
 
 .. note::
 
@@ -559,7 +575,14 @@ Orchestrated batch scoring
 Quickstart
 ^^^^^^^^^^
 
-For orchestrated model batch scoring, you can run either:
+For orchestrated model batch scoring, you also have the option to set up a cloud storage
+block. If you created a remote storage-block, create the following environment variable:
+
+.. code-block:: console
+
+    (exercise_prediction) $ export PREFECT_SCORE_BATCH_SB=<block_type>/<block_name>
+
+For orchestrated model batch scoring, you can then run either:
 
 .. code-block:: console
 
