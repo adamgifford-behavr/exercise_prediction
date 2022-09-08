@@ -575,11 +575,12 @@ if __name__ == "__main__":
 
     # not used in this stub but often useful for finding various files
     project_dir = Path(__file__).resolve().parents[1]
-    FEATURE_STORE_URI = os.getenv("FEATURE_STORE_URI", "localhost")
+    FEATURE_STORE_URI = os.getenv(
+        "FEATURE_STORE_URI", "localhost:5432/exercise-prediction"
+    )
     FEATURE_STORE_PW = os.getenv("FEATURE_STORE_PW")
     DATABASE_URI = (
         f"postgresql+psycopg2://postgres:{FEATURE_STORE_PW}@{FEATURE_STORE_URI}"
-        "/feature_store"
     )
 
     main()
