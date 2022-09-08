@@ -6,7 +6,7 @@ import logging
 import os
 from contextlib import contextmanager
 from time import sleep
-from typing import Any, Dict, Generator, Optional, Tuple, Union
+from typing import Any, Generator, Optional, Tuple, Union
 
 import click
 import mlflow
@@ -154,12 +154,11 @@ def process_columns(
     return df
 
 
-def _get_registered_model_id(model_name: str, model_stage: str) -> str:
+def _get_registered_model_id(model_stage: str) -> str:
     """
     It gets the run_id of the registered model with the name and stage you specify
 
     Args:
-      model_name (str): The name of the model you want to deploy.
       model_stage (str): The stage of the model to be used.
 
     Returns:
@@ -167,9 +166,9 @@ def _get_registered_model_id(model_name: str, model_stage: str) -> str:
     """
     logger = logging.getLogger(__name__)
 
-    mlflow.set_tracking_uri(f"http://{MLFLOW_DB_URI}")
-    client = MlflowClient(f"http://{MLFLOW_DB_URI}")
-    m_vs = client.search_model_versions(f"name='{model_name}'")
+    mlflow.set_tracking_uri(f"http://{MLFLOW_TRACKING_SERVER}")
+    client = MlflowClient(f"http://{MLFLOW_TRACKING_SERVER}")
+    m_vs = client.search_model_versions(f"name='{MODEL_NAME}'")
     for m_v in m_vs:
         mvx = dict(m_v)
         if mvx["current_stage"] == model_stage:
@@ -177,9 +176,8 @@ def _get_registered_model_id(model_name: str, model_stage: str) -> str:
             logger.info("model run_id = %s", model_run_id)
             break
     else:
-        msg = "no %s model at %s stage", model_name, model_stage
-        logger.error(msg)
-        raise ValueError(msg)
+        logger.error("no %s model at %s stage", MODEL_NAME, model_stage)
+        raise ValueError(f"no {MODEL_NAME} model at {model_stage} stage")
 
     return model_run_id
 
@@ -310,7 +308,7 @@ def _get_table_model(
 
 
 def apply_model(
-    model_data: Dict[str, str],
+    model_stage: str,
     df_test_meta: pd.DataFrame,
     feature_table: str,
     label_col: str,
@@ -319,7 +317,7 @@ def apply_model(
     This function takes in a model's name and stage, loads the model, and scores new data
 
     Args:
-      model_data (Dict[str, str]): a dictionary containing the model name and stage
+      model_stage (str): the stage of the model in the registry
       df_test_meta (pd.DataFrame): the dataframe that contains the features and the label
       column
       feature_table (str): the name of the table that contains the features
@@ -338,12 +336,10 @@ def apply_model(
 
     # load model
     logger.info("searching for model run_id...")
-    model_run_id = _get_registered_model_id(model_data["name"], model_data["stage"])
+    model_run_id = _get_registered_model_id(model_stage)
 
-    logger.info(
-        ("loading model %s version of %s...", model_data["stage"], model_data["name"])
-    )
-    model_uri = f"runs:/{model_run_id}/"
+    logger.info(("loading %s version of %s...", model_stage, MODEL_NAME))
+    model_uri = f"runs:/{model_run_id}/models"
     clf = mlflow.sklearn.load_model(model_uri)
     logger.info("loading complete")
 
@@ -385,12 +381,6 @@ def apply_model(
     default="label_group",
 )
 @click.argument(
-    "model_name",
-    type=str,
-    required=False,
-    default="exercise_prediction_naive_feats_pipe",
-)
-@click.argument(
     "model_stage",
     type=str,
     required=False,
@@ -400,7 +390,6 @@ def main(
     feature_table: str = "naive_frequency_features",
     prediction_table: str = "naive_frequency_features_predictions",
     label_col: str = "label_group",
-    model_name: str = "exercise_prediction_naive_feats_pipe",
     model_stage: str = "Production",
 ) -> None:
     """
@@ -414,8 +403,6 @@ def main(
       predictions. Defaults to naive_frequency_features_predictions
       label_col (str): The name of the column in the feature table that contains the label.
       Defaults to label_group
-      model_name (str): the name of the model in the model registry. Defaults to
-      exercise_prediction_naive_feats_pipe
       model_stage (str): the stage of the model in the model registry. Defaults to Production
     """
     logger = logging.getLogger(__name__)
@@ -425,8 +412,7 @@ def main(
     logger.info("loading complete")
 
     logger.info("applying model to batch data...")
-    model_data = {"name": model_name, "stage": model_stage}
-    pred_df = apply_model(model_data, df_test_meta, feature_table, label_col)
+    pred_df = apply_model(model_stage, df_test_meta, feature_table, label_col)
     logger.info("model applied")
 
     logger.info("writing predictions to %s...", prediction_table)
@@ -455,10 +441,13 @@ if __name__ == "__main__":
     FEATURIZE_ID = os.getenv("FEATURIZE_ID")
     DATABASE_URI = (
         f"postgresql+psycopg2://postgres:{FEATURE_STORE_PW}@{FEATURE_STORE_URI}"
-        "/feature_store"
     )
+    MODEL_NAME = os.getenv("EXP_NAME")
+    DEBUG = os.getenv("DEBUG", "false") == "true"
+    if DEBUG:
+        MODEL_NAME = MODEL_NAME + "_debug"
 
-    MLFLOW_DB_URI = os.getenv("MLFLOW_DB_URI", "localhost:5000")
+    MLFLOW_TRACKING_SERVER = os.getenv("MLFLOW_TRACKING_SERVER", "localhost:5000")
     # MLFLOW_DB_PW = os.getenv("MLFLOW_DB_PW")
 
     main()

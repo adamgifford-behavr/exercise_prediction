@@ -360,7 +360,7 @@ def train_log_best_model(
     best_child_id = best_child_run.info.run_id
     with mlflow.start_run(run_id=best_child_id):
         clf.fit(X_train.to_dict(orient="records"), y_train.values)
-        mlflow.sklearn.log_model(clf, artifact_path="artifacts")
+        mlflow.sklearn.log_model(clf, artifact_path="models")
 
     return clf, best_child_id
 
@@ -619,6 +619,7 @@ def main(
         for group, limit in zip(["train", "validation"], data_limits)
     )
     logger.info("loading complete")
+    logger.info("train shape is %s", str(df_train_meta.shape))
 
     logger.info("performing preprocessing...")
     x_data = [process_columns(table_name, df) for df in (df_train_meta, df_val_meta)]
@@ -678,26 +679,22 @@ if __name__ == "__main__":
 
     FEATURE_STORE_URI = os.getenv("FEATURE_STORE_URI", "localhost:5432")
     FEATURE_STORE_PW = os.getenv("FEATURE_STORE_PW")
-    FEATURIZE_ID = os.getenv(
-        "FEATURIZE_ID",
-        "b924133661c11af1c2c7f560527c03833cec4dfd2202b30afe058b5d61d176e7",
-    )
+    FEATURIZE_ID = os.getenv("FEATURIZE_ID")
     EXP_NAME = os.getenv("EXP_NAME", "exercise_prediction_naive_feats")
     DEBUG = os.getenv("DEBUG", "false") == "true"
     DATABASE_URI = (
         f"postgresql+psycopg2://postgres:{FEATURE_STORE_PW}@{FEATURE_STORE_URI}"
-        "/feature_store"
     )
 
-    MLFLOW_DB_URI = os.getenv("MLFLOW_DB_URI", "localhost:5000")
+    MLFLOW_TRACKING_SERVER = os.getenv("MLFLOW_TRACKING_SERVER", "localhost:5000")
     # MLFLOW_DB_PW = os.getenv("MLFLOW_DB_PW")
 
-    mlflow.set_tracking_uri(f"http://{MLFLOW_DB_URI}")
+    mlflow.set_tracking_uri(f"http://{MLFLOW_TRACKING_SERVER}")
     if DEBUG:
         EXP_NAME = EXP_NAME + "_debug"
 
     mlflow.set_experiment(EXP_NAME)
     EXP_ID = dict(mlflow.get_experiment_by_name(EXP_NAME))["experiment_id"]
-    CLIENT = MlflowClient(f"http://{MLFLOW_DB_URI}")
+    CLIENT = MlflowClient(f"http://{MLFLOW_TRACKING_SERVER}")
 
     main()
