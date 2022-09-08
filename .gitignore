@@ -103,3 +103,4 @@ src/monitor/prediction_service/models
 # system-specific config files
 **/*-deployment.yaml
 **/*-deployment.yaml
+src/features/datafile_group_splits.json
