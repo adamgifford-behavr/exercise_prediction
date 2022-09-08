@@ -128,9 +128,10 @@ endif
 
 ## simulate streaming monitoring service
 docker_monitor:
-	cd src/monitor
-	python prepare.py
-	docker-compose up
+	cp models -r src/monitor/prediction_service ; \
+	cd src/monitor ; \
+	python prepare.py ; \
+	docker-compose up ; \
 
 ## code quality checks
 quality_checks:
