@@ -34,8 +34,24 @@ Installation
 order to download the data, but it is free). Place the contents in the
 `data/raw/` directory.
 
-3. Create a virtual environment using your favorite method. For example,
+3. Create a virtual environment for the entire project using your favorite method. For example,
 using make:
+
+.. code-block:: console
+
+    (base) $ make create_environment
+
+or, using conda:
+
+.. code-block:: console
+
+    (base) $ conda create --name <env_name> python=3.10
+
+where ``env_name`` is whatever name you want to provide for the environment. If using
+``make``, ``env_name`` defaults to "exercise_prediction".
+
+4. Activate your environment with either ``conda activate <env_name>`` or
+``source activate <env_name>``, then install requirements using make:
 
 .. code-block:: console
 
@@ -50,25 +66,21 @@ or, using conda:
 where ``env_name`` is whatever name you want to provide for the environment. If using
 ``make``, ``env_name`` defaults to "exercise_prediction".
 
-4. Activate your environment.
-
-.. code-block:: console
-
-    (base) $ conda activate exercise_prediction
-    (exercise_prediction) $
-
-5. Either set up a PostgreSQL database called "feature_store" in AWS or download locally
-and create a password for the default "postgres" user. For local setup, the URI for the
-database defaults to localhost:5432. For cloud deployment, find the endpoint connection
-string after setup. Store the URI/endpoint and password in a .env file in the parent
-directory as:
+5. Either set up a PostgreSQL database called AWS or download locally, create a
+password for the default "postgres" user, and an intial database. For local setup, the
+URI for the database defaults to ``localhost:5432/<db_name>``, where ``db_name`` is the
+name of your database. For cloud deployment, find the endpoint connection string after
+setup, which will be something like
+``<rds_instance>.XXXXXXXXXXXX.us-east-1.rds.amazonaws.com/<db_name>``, where
+``rds_instance`` is the name of the database instace you created. Store the
+URI/endpoint and password in a .env file in the parent directory as:
 
 .. code-block:: text
 
     FEATURE_STORE_URI=<URI or ENDPOINT HERE>
     FEATURE_STORE_PW=<password here>
 
-Similarly, you will need to create a database for MLflow called "mlflow_backend_db" and
+Similarly, you will need to create a database for MLflow called "mlflow_db" and
 an owner for the database called "mlflow". Store the URI/endpoint and password for the
 database in .env:
 
@@ -92,13 +104,10 @@ the following environment variables:
 .. code-block:: console
 
     (exercise_prediction) $ export S3_BUCKET=<s3_bucket_name/>
-    (exercise_prediction) $ export AWS_CONFIG_PATH=<path_to_aws_config>
+    (exercise_prediction) $ export AWS_PROFILE=<name_of_config_profile>
 
-If you would like to set up the pre-commit hooks I used for this project:
-
-.. code-block:: console
-
-    (exercise_prediction) $ pre-commit install
+where ``name_of_config_profile`` is the name of your AWS profile in "~/.aws/config" (
+typically `default` by default).
 
 
 Data Processing
@@ -164,8 +173,17 @@ or
 
 .. code-block:: console
 
-    (exercise_prediction) $ cd src/features
-    (exercise_prediction) $ python build_features.py
+    (exercise_prediction) $ python src/features/build_features.py \
+		src/features/frequency_features.json \
+		src/features/datafile_group_splits.json \
+		src/features/metaparams.json
+
+When features are completed, find the log that identifies the "id" for the run and
+store it in .env as:
+
+.. code-block:: text
+
+    FEATURIZE_ID=<id here>
 
 The details
 ^^^^^^^^^^^
@@ -232,31 +250,28 @@ To perform model training, first you need to start the MLflow server:
 
 .. code-block:: console
 
-    (exercise_prediction) $ mlflow server \
-        --backend-store-uri postgresql://mlflow:MLFLOW_DB_PW@MLFLOW_DB_URI/mlflow_backend_db \
+    (exercise_prediction) $ mlflow server [-h 0.0.0.0 -p 5000] \
+        --backend-store-uri postgresql://mlflow:MLFLOW_DB_PW@MLFLOW_DB_URI \
         --default-artifact-root ROOT_DIRECTORY
 
 where ``ROOT_DIRECTORY`` is the directory your artifacts will be stored (generally
-`mlruns` or a remote storage container like S3).
+`mlruns` or a remote storage container like S3). The arguments ``-h 0.0.0.0 -p 5000``
+are optional for if you are deploying the tracking server to the cloud.
+
+.. note::
+
+    The mlflow server command does not import environment variables ``MLFLOW_DB_PW`` and
+    ``MLFLOW_DB_URI``, so these will need to be written out in the command above.
 
 You also may need to define the following environment variables in ``.env``:
 
 .. code-block:: text
 
-    FEATURIZE_ID=<id here>
     EXP_NAME=<experiment name here>
 
-where:
-
-``FEATURIZE_ID`` is the featurization id created during the run from
-``build_features.py``. This only needs to be explicitly defined if changes are made to
-the featurization process. Otherwise it defaults to the base features data.
-
-and:
-
-``EXP_NAME`` is the desired name of the MLflow experiment. This only needs to be explicitly
-defined if you'd like to change the name of the experiment. If changed, just make sure
-it remains the same for subsequent model scoring and monitoring (see below).
+where ``EXP_NAME`` is the desired name of the MLflow experiment. This only needs to be
+explicitly defined if you'd like to change the name of the experiment. If changed, just
+make sure it remains the same for subsequent model scoring and monitoring (see below).
 
 Stand-alone training
 ~~~~~~~~~~~~~~~~~~~~
@@ -274,8 +289,10 @@ or
 
 .. code-block:: console
 
-    (exercise_prediction) $ cd src/models
-    (exercise_prediction) $ python train_model.py
+    (exercise_prediction) $ python src/models/train_model.py \
+		naive_frequency_features \
+		label_group \
+		src/models/model_search.json
 
 .. note::
 
@@ -421,14 +438,15 @@ Quickstart
 For orchestrated model training, you also need start a Prefect server:
 
 .. code-block:: console
-
-    (exercise_prediction) $ prefect orion start
+    (exercise_prediction) $ prefect config set \
+        PREFECT_ORION_UI_API_URL="http://<external-ip>:4200/api"
+    (exercise_prediction) $ prefect orion start --host 0.0.0.0
 
 Next, you can deploy the orchestration using either:
 
 .. code-block:: console
 
-    (exercise_prediction) $ make deploy_train
+    (exercise_prediction) $ make orchestrate_train
 
 or
 
@@ -438,9 +456,9 @@ or
     (exercise_prediction) $ prefect deployment build \
 		orchestrate_train.py:train_flow \
 		-n 'Main Model-Training Flow' \
-		-q 'scheduled_training_flow'
+		-q 'manual_training_flow'
 	(exercise_prediction) $ prefect deployment apply train_flow-deployment.yaml
-    (exercise_prediction) $ prefect agent start -q 'scheduled_training_flow'
+    (exercise_prediction) $ prefect agent start -q 'manual_training_flow'
 
 The details
 ^^^^^^^^^^^
@@ -493,15 +511,7 @@ or
 
 .. code-block:: console
 
-    (exercise_prediction) $ cd src/models/
-    (exercise_prediction) $ pythonscore_batch.py
-
-.. note::
-
-    If using ``make``, the ``stand_alone_score_batch`` requires that
-    ``make stand_alone_train`` be run first (i.e., it doesn't check for whether
-    ``make deploy_train`` was run also). If you used ``make deploy_train`` to train the
-    model, jump down to "Orchestrated batch scoring" below.
+    (exercise_prediction) $ python src/models/score_batch.py
 
 The details
 ^^^^^^^^^^^
@@ -553,7 +563,7 @@ For orchestrated model batch scoring, you can run either:
 
 .. code-block:: console
 
-    (exercise_prediction) $ make deploy_score_batch
+    (exercise_prediction) $ make orchestrate_score_batch
 
 or
 
@@ -563,16 +573,9 @@ or
     (exercise_prediction) $ prefect deployment build \
 		orchestrate_score_batch.py:score_flow \
 		-n 'Main Model-Scoring Flow' \
-		-q 'scheduled_scoring_flow'
+		-q 'manual_scoring_flow'
 	(exercise_prediction) $ prefect deployment apply score_flow-deployment.yaml
-    (exercise_prediction) $ prefect agent start -q 'scheduled_scoring_flow'
-
-.. note::
-
-    If using ``make``, the ``deploy_score_batch`` requires that
-    ``make deploy_train`` be run first (i.e., it doesn't check for whether
-    ``make stand_alone_train`` was run also). If you used ``make stand_alone_train`` to
-    train the model, jump back to "Stand-alone batch scoring" above.
+    (exercise_prediction) $ prefect agent start -q 'manual_scoring_flow'
 
 The details
 ^^^^^^^^^^^
