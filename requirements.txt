@@ -30,7 +30,7 @@ python-dotenv
 pyyaml
 requests
 s3fs
-scikit-learn
+scikit-learn==1.0.2
 sphinx
 sqlalchemy
 werkzeug
