@@ -29,6 +29,7 @@ pytest
 python-dotenv
 pyyaml
 requests
+s3fs
 scikit-learn
 sphinx
 sqlalchemy

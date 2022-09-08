@@ -9,6 +9,8 @@ PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 # PROFILE = C:\Users\adamgifford_behavr.DESKTOP-PQU0D8M\.aws\config
 BUCKET = ${S3_BUCKET}
 PROFILE = ${AWS_PROFILE}
+TRAIN_SB = ${PREFECT_TRAIN_SB}
+SCORE_BATCH_SB = ${PREFECT_SCORE_BATCH_SB}
 PROJECT_NAME = exercise_prediction
 
 ifeq (,$(shell which conda))
@@ -76,13 +78,26 @@ pipenv:
 
 ## orchestrate training
 orchestrate_train:
+ifeq (,$(TRAIN_SB))
+	@echo ">>> No cloud storage bucket defined. Using local storage"
 	cd src/orchestration ; \
 	prefect deployment build \
 		orchestrate_train.py:train_flow \
 		-n 'Main Model-Training Flow' \
-		-q 'manual_training_flow' ; \
+		-q 'manual_training_flow'
 	prefect deployment apply train_flow-deployment.yaml ; \
 	prefect agent start -q 'manual_training_flow'
+else
+	@echo ">>> Building with cloud storage"
+	cd src/orchestration ; \
+	prefect deployment build \
+		orchestrate_train.py:train_flow \
+		-n 'Main Model-Training Flow' \
+		-q 'manual_training_flow' \
+		-sb $(TRAIN_SB) ; \
+	prefect deployment apply train_flow-deployment.yaml ; \
+	prefect agent start -q 'manual_training_flow'
+endif
 
 ## run standalone training
 stand_alone_score_batch:
@@ -90,6 +105,8 @@ stand_alone_score_batch:
 
 ## orchestrate batch scoring
 orchestrate_score_batch:
+ifeq (,$(TRAIN_SB))
+	@echo ">>> No cloud storage bucket defined. Using local storage"
 	cd src/orchestration ; \
 	prefect deployment build \
 		orchestrate_score_batch.py:score_flow \
@@ -97,6 +114,17 @@ orchestrate_score_batch:
 		-q 'manual_scoring_flow' ; \
 	prefect deployment apply score_flow-deployment.yaml ; \
 	prefect agent start -q 'manual_scoring_flow'
+else
+	@echo ">>> Building with cloud storage"
+	cd src/orchestration ; \
+	prefect deployment build \
+		orchestrate_score_batch.py:score_flow \
+		-n 'Main Model-Scoring Flow' \
+		-q 'manual_scoring_flow' \
+		-sb $(SCORE_BATCH_SB) ; \
+	prefect deployment apply score_flow-deployment.yaml ; \
+	prefect agent start -q 'manual_scoring_flow'
+endif
 
 ## simulate streaming monitoring service
 docker_monitor:
