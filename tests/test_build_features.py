@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 
+import pandas as pd
 import pytest
 from deepdiff import DeepDiff
 from dotenv import find_dotenv, load_dotenv
@@ -138,8 +139,19 @@ def test_calculate_windowed_feats():
     expected_head = expected_records["head"]
     expected_tail = expected_records["tail"]
 
-    head_diff = DeepDiff(expected_head, actual_head, significant_digits=3)
-    tail_diff = DeepDiff(expected_tail, actual_tail, significant_digits=3)
+    # ignoring files here because the absolute paths may vary by system
+    head_diff = DeepDiff(
+        expected_head,
+        actual_head,
+        significant_digits=3,
+        exclude_regex_paths={r"root\[\d+\]\['file'\]"},
+    )
+    tail_diff = DeepDiff(
+        expected_tail,
+        actual_tail,
+        significant_digits=3,
+        exclude_regex_paths={r"root\[\d+\]\['file'\]"},
+    )
 
     assert actual_shape == (847, 72), "size different"
 
