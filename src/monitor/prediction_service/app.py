@@ -10,21 +10,18 @@ Returns:
     The result is a JSON object with the prediction.
 """
 import os
-import pickle  # nosec
 
-import requests
+import mlflow
+import requests  # type: ignore
 from flask import Flask, jsonify, request
 from flask.wrappers import Response
 from pymongo import MongoClient
 
-MODEL_FILE = os.getenv("MODEL_FILE", "model.pkl")
-
 EVIDENTLY_SERVICE_ADDRESS = os.getenv("EVIDENTLY_SERVICE", "http://127.0.0.1:5000")
 MONGODB_ADDRESS = os.getenv("MONGODB_ADDRESS", "mongodb://127.0.0.1:27017")
 
-with open(MODEL_FILE, "rb") as f_in:
-    model = pickle.load(f_in)  # nosec
-
+logged_model = os.getenv("MODEL_LOCATION", "models/")
+model = mlflow.pyfunc.load_model(logged_model)
 
 app = Flask("ex_pred_lblgrp_stream")
 mongo_client = MongoClient(MONGODB_ADDRESS)
@@ -107,7 +104,9 @@ def send_to_evidently_service(record: dict, prediction: str) -> None:
     """
     rec = record.copy()
     rec["prediction"] = prediction
-    requests.post(f"{EVIDENTLY_SERVICE_ADDRESS}/iterate/exercise_group", json=[rec])
+    requests.post(
+        f"{EVIDENTLY_SERVICE_ADDRESS}/iterate/exercise_group", json=[rec], timeout=4
+    )
 
 
 if __name__ == "__main__":

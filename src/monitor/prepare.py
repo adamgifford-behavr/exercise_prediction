@@ -13,10 +13,7 @@ import src.models.score_batch as sb
 load_dotenv(find_dotenv())
 FEATURE_STORE_URI = os.getenv("FEATURE_STORE_URI", "localhost")
 FEATURE_STORE_PW = os.getenv("FEATURE_STORE_PW")
-DATABASE_URI = (
-    f"postgresql+psycopg2://postgres:{FEATURE_STORE_PW}@{FEATURE_STORE_URI}"
-    "/feature_store"
-)
+DATABASE_URI = f"postgresql+psycopg2://postgres:{FEATURE_STORE_PW}@{FEATURE_STORE_URI}"
 sb.DATABASE_URI = DATABASE_URI
 sb.FEATURIZE_ID = os.getenv("FEATURIZE_ID")
 

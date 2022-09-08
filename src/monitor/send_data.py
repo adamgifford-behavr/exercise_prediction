@@ -1,6 +1,7 @@
 """
 This script simulates sending streaming data to the prediction service
 """
+import glob
 import json
 from datetime import datetime
 from time import sleep
@@ -8,7 +9,8 @@ from time import sleep
 import pyarrow.parquet as pq
 import requests  # type: ignore
 
-table = pq.read_table("preprocessed_fileID12_subjID10003_dataID0.parquet")
+pq_file = glob.glob("*.parquet")[0]
+table = pq.read_table(pq_file)
 data = table.to_pylist()
 
 
@@ -32,6 +34,7 @@ with open("target.csv", "w", encoding="utf-8") as f_target:
             "http://127.0.0.1:9696/predict",
             headers={"Content-Type": "application/json"},
             data=json.dumps(row, cls=DateTimeEncoder),
+            timeout=4,
         )
         print(resp_data)
         resp = resp_data.json()
