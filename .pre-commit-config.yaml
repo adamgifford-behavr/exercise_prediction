@@ -5,7 +5,7 @@ repos:
     rev: v3.2.0
     hooks:
       - id: trailing-whitespace
-      - id: check-added-large-files
+      # - id: check-added-large-files
       - id: check-executables-have-shebangs
       - id: check-json
       - id: pretty-format-json
@@ -60,19 +60,19 @@ repos:
         language_version: python3
         types: [python]
         args: ["-x", "tests"]
-      # - id: pytest
-      #   name: pytest
-      #   entry: coverage run -m pytest tests
-      #   stages: [commit]
-      #   types: [python]
-      #   language: system
-      #   pass_filenames: false
-      #   always_run: true
-      # - id: coverage
-      #   name: coverage report
-      #   entry: coverage html -d htmlcov --show-contexts --skip-empty
-      #   stages: [commit]
-      #   types: [python]
-      #   language: system
-      #   pass_filenames: false
-      #   always_run: true
+      - id: pytest
+        name: pytest
+        entry: coverage run -m pytest tests
+        stages: [commit]
+        types: [python]
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: coverage
+        name: coverage report
+        entry: coverage html -d htmlcov --show-contexts --skip-empty
+        stages: [commit]
+        types: [python]
+        language: system
+        pass_filenames: false
+        always_run: true
