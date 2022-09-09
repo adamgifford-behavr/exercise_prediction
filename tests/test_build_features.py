@@ -144,13 +144,19 @@ def test_calculate_windowed_feats():
         expected_head,
         actual_head,
         significant_digits=3,
-        exclude_regex_paths={r"root\[\d+\]\['file'\]"},
+        exclude_regex_paths={
+            r"root\[\d+\]\['file'\]",
+            r"root\[\d+\]\['featurize_id'\]",
+        },
     )
     tail_diff = DeepDiff(
         expected_tail,
         actual_tail,
         significant_digits=3,
-        exclude_regex_paths={r"root\[\d+\]\['file'\]"},
+        exclude_regex_paths={
+            r"root\[\d+\]\['file'\]",
+            r"root\[\d+\]\['featurize_id'\]",
+        },
     )
 
     assert actual_shape == (847, 72), "size different"
