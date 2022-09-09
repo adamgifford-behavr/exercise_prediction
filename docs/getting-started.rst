@@ -697,6 +697,13 @@ or
 The details
 ^^^^^^^^^^^
 
+The tests will likely not pass until the following criteria are met:
+1. The dataset is converted from a MATLAB file to a series of PARQUET files via: ``make data``
+  (this creates the `datafile_group_splits.json` file necessary for validation).
+2. The data is featurized via: ``make features`` (this provides the potentially system-
+  specific ``FEATURIZE_ID`` for the featurization process).
+3. ``FEATURIZE_ID`` is added as an environment variable in ``.env``.
+
 Quality Checks
 --------------
 
