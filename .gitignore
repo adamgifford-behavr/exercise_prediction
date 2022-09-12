@@ -97,8 +97,9 @@ target/
 # MLflow metadata
 **/mlruns
 
-# extra copy of model in monitoring
+# extra copies of model in monitoring
 src/monitor/prediction_service/models
+src/deployment/web_service/models
 
 # system-specific config files
 **/*-deployment.yaml

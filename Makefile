@@ -103,11 +103,11 @@ endif
 stand_alone_score_batch:
 	python src/models/score_batch.py
 
-## orchestrate batch scoring
-orchestrate_score_batch:
+## deploy batch scoring
+deploy_score_batch:
 ifeq (,$(TRAIN_SB))
 	@echo ">>> No cloud storage bucket defined. Using local storage"
-	cd src/orchestration ; \
+	cd src/deployment/batch ; \
 	prefect deployment build \
 		orchestrate_score_batch.py:score_flow \
 		-n 'Main Model-Scoring Flow' \
@@ -116,7 +116,7 @@ ifeq (,$(TRAIN_SB))
 	prefect agent start -q 'manual_scoring_flow'
 else
 	@echo ">>> Building with cloud storage"
-	cd src/orchestration ; \
+	cd src/deployment/batch ; \
 	prefect deployment build \
 		orchestrate_score_batch.py:score_flow \
 		-n 'Main Model-Scoring Flow' \

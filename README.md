@@ -61,20 +61,28 @@ Project Organization
     |   |   |                              and test datasets
     |   |   └── val_split_crit.json     <- criteria for splitting train/val data files into
     |   |                                  train vs. val
+    |   ├── deployment              <- Scripts to deploy the model in batch and
+    |   |   |                          streaming modes
+    |   |   ├── deploy_score_batch.py      <- code to deploy the orchestration
+    |   |   └── orchestrate_score_batch.py <- main code for setting up scoring
+    |   |                                     orchestration in batch mode
     │   │
     │   ├── features        <- Scripts to turn raw data into features for modeling
     │   │   ├── build_features.py          <- main code for building features table
-    |   |   ├── datafile_group_splits.json <- lists of files organized by group (i.e.,
-    |   |   |                                 training, validation, testing, simulation)
     |   |   ├── features_tables.py         <- SQLAlchemy table object definitions for
     |   |   |                                 features tables
     |   |   ├── frequency_features.json    <- signal frequencies to extract for each raw
     |   |   |                                 signal measurement
     |   |   └── metaparams.json            <- metaparameters that define the featurization
     |   |                                     pipeline
+    |   ├── infrastructure    <- Terraform code for resource managament
+    |   |   ├── modules           <- directory for code defining resources
+    |   |   ├── vars              <- directory for code defining resource variables
+    |   |   ├── main.tf       <- main Terraform script
+    |   |   └── variables.tf  <- variables for main Terraform script
     │   │
     │   ├── models          <- Scripts to train models and then use trained models to make
-    │   │   │                  predictions
+    │   │   │                  predictions in stand-alone mode
     │   │   ├── score_batch.py          <- Main script for batch scoring
     │   │   ├── train_model.py          <- Main script for model training
     |   |   ├── initial_points_gbc.json <- Starting point for GradientBoostingClassifier
@@ -107,46 +115,56 @@ Project Organization
     |   |   ├── requirements.txt   <- requirements for streaming simulation
     |   |   └── send_data.py       <- script that simulates data streaming
     |   |
-    │   └── orchestration   <- Scripts to set up training and scoring orchestration with
-    |       |                  Prefect
-    │       ├── deploy_score_batch.py      <- code to set up batch scoring deployment
+    │   └── orchestration   <- Scripts to set up orchestrated training
     |       ├── deploy_train.py            <- code to set up training deployment
     |       ├── initial_points_gbc.json    <- Starting point for GradientBoostingClassifier
     |       |                                 hyperparameter search (greatly speeds up fit)
     |       ├── model_search.json          <- Data that define the classifier and search
     |       |                                 parameters
-    |       ├── orchestrate_score_batch.py <- code to set up batch scoring as a Prefect flow
-    |       ├── orchestrate_train.py       <- code to set up training as a Prefect flow
-    |       ├── score_flow-deploynent.yaml <- config for deployment of batch scoring flow
-    |       └── train_flow-deployment.yaml <- config for deployment of training flow
+    |       └── orchestrate_train.py       <- code to set up training as a Prefect flow
     │
     └── tests             <- Scripts to run unit testing
+        ├── expected_features_df_data.json  <- data to test main featurization code and
+        |                                      data preprocessing
+        ├── test_build_features.py          <- script to test functions in
+        |                                    ``build_features.py``
+        ├── test_make_data.py               <- script to test functions in
+        |                                    ``make_dataset.py``
+        ├── test_score_batch.py              <- script to test functions in
+        |                                     ``score_batch.py``
+        └── test_train_model.py               <- script to test functions in
+                                               ``train_model.py``
 
 Getting Started
 ------------
-For more detailed instructions, see the `docs`.
+For more detailed instructions (including ``make`` commands, testing & formatting, and infrastructure), see the `docs`.
 
 **Installation**
 1. Clone the repo
 ```
-(base) $ git clone https://github.com/adamgifford-behavr/exercise_prediction.git
+$ git clone https://github.com/adamgifford-behavr/exercise_prediction.git
 ```
 2. Download the dataset from the Microsoft Research Open Data Repository
 [here](https://msropendata.com/datasets/799c1167-2c8f-44c4-929c-227bf04e2b9a).
-3. Create a virtual environment
+3. Create a and activate a virtual environment
 ```
-conda create --name <env_name> --file requirements.txt
+$ conda create --name <env_name> python=3.10
+$ conda activate <env_name>
 ```
-4. Create and a virtual environment
+4. Install requirements
 ```
-conda create --name <env_name> --file requirements.txt
-conda activate <env_name>
+$ python -m pip install -U pip setuptools wheel
+$ python -m pip install -r requirements.txt
+$ pre-commit install
 ```
-5. Either set up a PostgreSQL database called "feature_store" in AWS or download locally
-and create a password for the default "postgres" user. For local setup, the URI for the
-database defaults to localhost:5432. For cloud deployment, find the endpoint connection
-string after setup. Store the URI/endpoint and password in a .env file in the parent
-directory as:
+5.  Either set up a PostgreSQL database called AWS or download locally, create a
+password for the default "postgres" user, and an intial database. For local setup, the
+URI for the database defaults to ``localhost:5432/<db_name>``, where ``db_name`` is the
+name of your database. For cloud deployment, find the endpoint connection string after
+setup, which will be something like
+``<rds_instance>.XXXXXXXXXXXX.us-east-1.rds.amazonaws.com/<db_name>``, where
+``rds_instance`` is the name of the database instace you created. Store the
+URI/endpoint and password in a .env file in the parent directory as:
 
 ```
 FEATURE_STORE_URI=<URI or ENDPOINT HERE>
@@ -161,76 +179,89 @@ database in .env:
 MLFLOW_DB_URI=<URI or ENDPOINT HERE>
 ```
 
+*Optional*
+
+If you would like to be able to sync your data to an S3 bucket, you will need to also set
+the following environment variables:
+
+```
+$ export S3_BUCKET=<s3_bucket_name/>
+$ export AWS_PROFILE=<name_of_config_profile>
+```
+
+where ``name_of_config_profile`` is the name of your AWS profile in "~/.aws/config" (
+typically `default` by default).
+
 **Data Processing**
 
 To process the data, simply run:
 ```
-(exercise_prediction) $ cd src/data
-(exercise_prediction) $ python make_dataset.py
+$ cd src/data
+$ python make_dataset.py
 ```
 
 **Featurization**
 
 To build features for modeling, run:
 ```
-(exercise_prediction) $ cd src/features
-(exercise_prediction) $ python build_features.py
+$ cd src/features
+$ python build_features.py
 ```
 
 **Model Training**
 
-For stand-alone training:
-```
-(exercise_prediction) $ mlflow server \
-    --backend-store-uri postgresql://mlflow:MLFLOW_DB_PW@MLFLOW_DB_URI/mlflow_backend_db \
-    --default-artifact-root ROOT_DIRECTORY
-(exercise_prediction) $ cd src/models
-(exercise_prediction) $ python train_model.py
-```
-
 For orchestrated training:
 ```
-(exercise_prediction) $ mlflow server \
+$ mlflow server \
     --backend-store-uri postgresql://mlflow:MLFLOW_DB_PW@MLFLOW_DB_URI/mlflow_backend_db \
     --default-artifact-root ROOT_DIRECTORY
-(exercise_prediction) $ prefect orion start
-(exercise_prediction) $ cd src/orchestration
-(exercise_prediction) $ prefect deployment build \
+$ prefect config set \
+        PREFECT_ORION_UI_API_URL="http://<EXTERNAL-IP>:4200/api"
+    (exercise_prediction) $ prefect orion start --host 0.0.0.0
+$ prefect orion start
+$ cd src/orchestration
+$ prefect deployment build \
     orchestrate_train.py:train_flow \
     -n 'Main Model-Training Flow' \
     -q 'scheduled_training_flow'
-(exercise_prediction) $ prefect deployment apply train_flow-deployment.yaml
-(exercise_prediction) $ prefect agent start -q 'scheduled_training_flow'
+$ prefect deployment apply train_flow-deployment.yaml
+$ prefect agent start -q 'scheduled_training_flow'
 ```
 
-**Model Scoring**
+where ``ROOT_DIRECTORY`` is the directory your artifacts will be stored (generally
+`mlruns` or a remote storage container like S3) and ``EXTERNAL-IP`` is the address of
+your cloud (e.g., AWS EC2) instance.
 
-For stand-alone batch scoring:
-```
-(exercise_prediction) $ cd src/models/
-(exercise_prediction) $ pythonscore_batch.py
-```
+**Model Deployment**
 
 For orchestrated batch scoring:
 ```
-(exercise_prediction) $ cd src/orchestration
-(exercise_prediction) $ prefect deployment build \
-    orchestrate_score_batch.py:score_flow \
-    -n 'Main Model-Scoring Flow' \
-    -q 'scheduled_scoring_flow'
-(exercise_prediction) $ prefect deployment apply score_flow-deployment.yaml
-(exercise_prediction) $ prefect agent start -q 'scheduled_scoring_flow'
+$ cd src/deployment/batch
+$ prefect deployment build \
+	orchestrate_score_batch.py:score_flow \
+	-n 'Main Model-Scoring Flow' \
+	-q 'manual_scoring_flow'
+$ prefect deployment apply score_flow-deployment.yaml
+$ prefect agent start -q 'manual_scoring_flow'
 ```
+
+For web-service deployment:
+
+``UNDER DEVELOPMENT``
+
+For streaming deployment:
+
+``UNDER DEVELOPMENT``
 
 **Model Monitoring**
 
 To simulate a streaming monitoring service:
+
 ```
-(exercise_prediction) $ cp models/model.pkl src/monitor/
-(exercise_prediction) $ cd src/monitor
-(exercise_prediction) $ python prepare.py
-(exercise_prediction) $ docker-compose up
-(exercise_prediction) $ python src/monitor/send_data.py
+$ cp models -r src/monitor/prediction_service
+$ cd src/monitor
+$ python prepare.py
+$ docker-compose up
 ```
 --------
 
