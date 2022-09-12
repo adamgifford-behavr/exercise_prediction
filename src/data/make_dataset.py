@@ -332,8 +332,8 @@ def _make_train_test_sim_split(
       n_sim_file (int): number of files from the test dataset to save for simulating
       real-world deployment and module updating,
     """
-    all_files = list(
-        x for x in interim_path.iterdir() if x.is_file() and "fileID" in str(x)
+    all_files = sorted(
+        list(x for x in interim_path.iterdir() if x.is_file() and "fileID" in str(x))
     )
     files_dict = _make_files_dict(all_files)
 
