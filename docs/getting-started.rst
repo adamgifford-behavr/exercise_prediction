@@ -734,7 +734,8 @@ or
 
 .. code-block:: console
 
-    (exercise_prediction) $ pytest tests/
+    (exercise_prediction) $ coverage run -m pytest tests/
+    (exercise_prediction) $ scoverage report -m
 
 The details
 ^^^^^^^^^^^
