@@ -18,7 +18,8 @@ good-names = [
     "X_w",
     "X_train",
     "X_val",
-    "X_test"
+    "X_test",
+    "X"
 ]
 
 [tool.isort]

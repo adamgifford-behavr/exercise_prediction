@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+scikit-learn = "==1.0.2"
+flask = "*"
+gunicorn = "*"
+mlflow = "==1.27.0"
+scipy = "==1.9.0"
+
+[dev-packages]
+requests = "*"
+
+[requires]
+python_version = "3.9"
