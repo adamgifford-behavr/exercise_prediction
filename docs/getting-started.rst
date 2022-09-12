@@ -55,13 +55,15 @@ where ``env_name`` is whatever name you want to provide for the environment. If 
 
 .. code-block:: console
 
-    (base) $ make requirements
+    (<env_name>) $ make requirements
 
-or, using conda:
+or, using pip:
 
 .. code-block:: console
 
-    (base) $ conda create --name <env_name> --file requirements.txt
+    (<env_name>) $ python -m pip install -U pip setuptools wheel
+	(<env_name>) $ python -m pip install -r requirements.txt
+	(<env_name>) $ pre-commit install
 
 where ``env_name`` is whatever name you want to provide for the environment. If using
 ``make``, ``env_name`` defaults to "exercise_prediction".
@@ -439,8 +441,10 @@ For orchestrated model training, you also need start a Prefect server:
 
 .. code-block:: console
     (exercise_prediction) $ prefect config set \
-        PREFECT_ORION_UI_API_URL="http://<external-ip>:4200/api"
+        PREFECT_ORION_UI_API_URL="http://EXTERNAL-IP:4200/api"
     (exercise_prediction) $ prefect orion start --host 0.0.0.0
+
+where ``EXTERNAL-IP`` is the address of your cloud (e.g., AWS EC2) instance.
 
 Next, you have the option to set up a cloud storage block to log flow run data. Follow
 the instructions from `this site <https://docs.prefect.io/tutorials/storage/>`_ if you
@@ -491,12 +495,18 @@ local storage.
     data to re-fit). Therefore, you will need to go to the Prefect UI to manually start
     a run of model training.
 
-Model Batch Scoring
--------------------
+Stand-Alone Model Serving
+-------------------------
 
-Model scoring can also be performed in stand-alone mode or with orchestration via Prefect.
-The end result is to test the "Production" model on simulated new data that was preprocessed
-by ``build_features.py``.
+Model Serving can be performed in stand-alone mode with batch scoring. The end result is
+to test the "Production" model on simulated new data that was preprocessed by
+``build_features.py``.
+
+We simulate scoring the model on new (unseen) data in batch mode by loading in data with
+the "simulate" ``dataset_group`` from our features table (which was processed in
+``build_features.py``). After scoring, we save the predictions and true labels, along
+with a link to each row of data in our features table, to a predictions table in our
+``feature_store`` database for further analysis.
 
 .. note::
 
@@ -505,14 +515,8 @@ by ``build_features.py``.
     thus you will have to manually promote the best model from ``build_features.py``
     in the MLflow model registry from "Staging" to "Production".
 
-Stand-alone batch scoring
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-We simulate scoring the model on new (unseen) data in batch mode by loading in data with
-the "simulate" ``dataset_group`` from our features table (which was processed in
-``build_features.py``). After scoring, we save the predictions and true labels, along
-with a link to each row of data in our features table, to a predictions table in our
-``feature_store`` database for further analysis.
+`---`
+~~~~~
 
 Quickstart
 ^^^^^^^^^^
@@ -569,8 +573,14 @@ doesn't exist in the database, the code can create it.
     naive_frequency_features_predictions_naive_frequency_features_p...` and selecting
     "Delete/Drop".
 
-Orchestrated batch scoring
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Model Deployment
+----------------
+
+Model serving can also deployed in both batch (orchestrated with Prefect) and streaming
+modes (with AWS Kinesis and Lambda functions).
+
+Batch mode
+~~~~~~~~~~
 
 Quickstart
 ^^^^^^^^^^
@@ -592,7 +602,7 @@ or
 
 .. code-block:: console
 
-    (exercise_prediction) $ cd src/orchestration
+    (exercise_prediction) $ cd src/deployment/batch
     (exercise_prediction) $ prefect deployment build \
 		orchestrate_score_batch.py:score_flow \
 		-n 'Main Model-Scoring Flow' \
@@ -612,6 +622,33 @@ requires the same input parameters.
     The orchestration is not set up to run on a schedule (since there is no continual
     stream of new data to re-fit). Therefore, you will need to go to the Prefect UI to
     manually start a run of model scoring.
+
+
+Web service
+~~~~~~~~~
+
+Quickstart
+^^^^^^^^^^
+
+**WORK IN PROGRESS**
+
+The details
+^^^^^^^^^^^
+
+**WORK IN PROGRESS**
+
+Streaming
+~~~~~~~~~
+
+Quickstart
+^^^^^^^^^^
+
+**WORK IN PROGRESS**
+
+The details
+^^^^^^^^^^^
+
+**WORK IN PROGRESS**
 
 Monitoring
 ----------
@@ -672,6 +709,11 @@ to test the monitoring functionality without running through the rest of the pip
     ``MODEL_LOCATION``, ``AWS_ACCESS_KEY_ID``, ``AWS_SECRET_ACCESS_KEY``, and
     ``AWS_DEFAULT_REGION`` in `src/monitor/docker-compose.yml`, where ``MODEL_LOCATION``
     is the full s3 path to your `models` folder.
+
+Infrastructure
+--------------
+
+I use Terraform to manage cloud- and local resources. **CURRENTLY IN PROGRESS.**
 
 Testing
 -------
