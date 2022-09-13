@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # pylint: disable=no-name-in-module
 # pylint: disable=import-error
+# pylint: disable=implicit-str-concat
 """
 This is a demo service for Evidently metrics integration with Prometheus and Grafana.
 
@@ -23,8 +24,9 @@ import flask
 import pandas as pd
 import prometheus_client
 import yaml
+from evidently.model_monitoring import ClassificationPerformanceMonitor  # NOQA
 from evidently.model_monitoring import ModelMonitoring  # NOQA
-from evidently.model_monitoring import CatTargetDriftMonitor, DataDriftMonitor
+from evidently.model_monitoring import CatTargetDriftMonitor, DataDriftMonitor  # NOQA
 from evidently.pipeline.column_mapping import ColumnMapping
 from flask import Flask
 from pyarrow import parquet as pq
@@ -69,6 +71,7 @@ class LoadedDataset:
 EVIDENTLY_MONITORS_MAPPING = {
     "cat_target_drift": CatTargetDriftMonitor,
     "data_drift": DataDriftMonitor,
+    "classification_performance": ClassificationPerformanceMonitor,
 }
 
 
@@ -152,7 +155,8 @@ class MonitoringService:  # pylint: disable=too-few-public-methods
 
         if current_size < window_size:
             logging.info(
-                "Not enough data for measurement: %s of %s." " Waiting more data",
+                "Not enough data for measurement: %s of %s."
+                " Waiting more data",  # pylint: disable=implicit-str-concat
                 current_size,
                 window_size,
             )
