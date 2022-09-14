@@ -640,7 +640,8 @@ or
 
 .. code-block:: console
 
-	(exercise_prediction) $ cd src/deployment/web_service
+	(exercise_prediction) $ cp -R models src/deployment/web_service
+    (exercise_prediction) $ cd src/deployment/web_service
 	(exercise_prediction) $ docker build -t exercise-prediction-webservice:v1 .
 	(exercise_prediction) $ docker run -itd --rm -p 9696:9696 exercise-prediction-webservice:v1
 	(exercise_prediction) $ python test.py

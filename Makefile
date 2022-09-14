@@ -127,6 +127,7 @@ else
 endif
 
 deploy_web_service:
+	cp -R models src/deployment/web_service ; \
 	cd src/deployment/web_service ; \
 	docker build -t exercise-prediction-webservice:v1 . ; \
 	docker run -itd --rm -p 9696:9696 exercise-prediction-webservice:v1 ; \
