@@ -9,6 +9,7 @@ flask = "*"
 gunicorn = "*"
 mlflow = "==1.27.0"
 scipy = "==1.9.0"
+boto3 = "*"
 
 [dev-packages]
 requests = "*"
