@@ -119,15 +119,11 @@ def _calculate_single_window_features(X_w: np.ndarray, freq_ixs: list) -> list:
 def prepare_data(records):
     """prepares the data for prediction"""
     data_records = [
-        {
-            key: val
-            for record in records
-            for key, val in record.items()
-            if key not in DROP_COLS
-        }
+        {key: val for key, val in record.items() if key not in DROP_COLS}
+        for record in records
     ]
-    values = [tuple(record.values()) for record in data_records]
-    ndarray = np.array(values, dtype=DT)
+    ndarray = np.zeros((len(data_records), len(data_records[0].keys())), dtype=DT)
+    ndarray = np.array([list(record.values()) for record in data_records])
     return ndarray
 
 

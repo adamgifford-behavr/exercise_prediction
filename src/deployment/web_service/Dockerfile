@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/python:3.9
+FROM python:3.10-slim
 
 RUN pip install -U pip
 RUN pip install pipenv
@@ -9,6 +9,7 @@ RUN pipenv install --system --deploy
 
 COPY predict.py .
 COPY models models
+COPY frequency_features.json frequency_features.json
 
 EXPOSE 9696
 
