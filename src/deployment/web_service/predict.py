@@ -5,6 +5,7 @@ import os
 import mlflow
 import numpy as np
 from flask import Flask, jsonify, request
+from flask.wrappers import Response
 from scipy import signal
 from scipy.fftpack import fft, fftshift
 
@@ -41,7 +42,19 @@ DT = np.dtype(
 app = Flask("exercise_predictions")
 
 
-def _generate_window_fxn(n_fft, n_data):
+def _generate_window_fxn(n_fft: int, n_data: int) -> np.ndarray:
+    """
+    It creates a matrix of Hann windows, where each column is a Hann window, the number of
+    rows is equal to the number of data points, and the number of columns is equal to
+    the number of different signals.
+
+    Args:
+      n_fft (int): The number of samples in each FFT.
+      n_data (int): number of recording signals
+
+    Returns:
+      A 2D array of size (n_fft, n_data)
+    """
     return np.tile(signal.hann(n_fft), (n_data, 1)).T
 
 
@@ -116,8 +129,17 @@ def _calculate_single_window_features(X_w: np.ndarray, freq_ixs: list) -> list:
     return flat_feats
 
 
-def prepare_data(records):
-    """prepares the data for prediction"""
+def prepare_data(records: dict) -> np.ndarray:
+    """
+    It takes a list of dictionaries, and returns a numpy array (after removing non-data
+    fields).
+
+    Args:
+      records (dict): dictionary of raw data records
+
+    Returns:
+      A numpy array of the data records.
+    """
     data_records = [
         {key: val for key, val in record.items() if key not in DROP_COLS}
         for record in records
@@ -127,8 +149,17 @@ def prepare_data(records):
     return ndarray
 
 
-def prepare_features(ndarray):
-    "Creates the features from raw data signals"
+def prepare_features(ndarray: np.ndarray) -> list[dict]:
+    """
+    We take the raw formatted data, apply a window function, calculate the spectrum, and
+    then calculate the features
+
+    Args:
+      ndarray (np.ndarray): raw data records converted to a numpy array
+
+    Returns:
+      A list of dictionaries.
+    """
     n_fft, n_data = ndarray.shape
     window = _generate_window_fxn(n_fft, n_data)
     freqs = _calculate_frequencies(n_fft)
@@ -140,15 +171,31 @@ def prepare_features(ndarray):
     return X
 
 
-def predict(X):
-    "Generates prediction"
+def predict(X: list[dict]) -> str:
+    """
+    It takes a list of dictionaries, each of which represents a single featurized
+    observation, and returns a string representing the predicted class for each observation
+
+    Args:
+      X (list[dict]): a list of dictionaries of featurized observations
+
+    Returns:
+      The prediction of the model.
+    """
     prediction = model.predict(X)
     return str(prediction[0])
 
 
 @app.route("/predict", methods=["POST"])
-def predict_endpoint():
-    "Web service endpoint to receive raw data for prediction"
+def predict_endpoint() -> Response:
+    """
+    Prediction endpoint for the web-service deployment. It takes a JSON array of records,
+    and calls the necessary functions to convert it to a NumPy array, convert that to a
+    list of dictionaries, and then use the deployed model to make a prediction.
+
+    Returns:
+      The jsonify-ed prediction.
+    """
     records = request.get_json()
 
     ndarray = prepare_data(records)
