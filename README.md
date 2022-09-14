@@ -261,15 +261,12 @@ In one terminal:
 $ cp -R models src/deployment/web_service
 $ cd src/deployment/web_service
 $ docker build -t exercise-prediction-webservice:v1 .
-$ docker run -it --rm -p 9696:9696 exercise-prediction-webservice:v1
-```
-
-Then, in a separate terminal:
-
-```
-$ cd src/deployment/web_service
+$ docker run -itd --rm -p 9696:9696 exercise-prediction-webservice:v1
 $ python test.py
 ```
+
+The Docker container is run in detached mode, use ``docker stop ...`` to stop the container
+once finished testing. See ``docker stop --help`` for details.
 
 *For streaming deployment*:
 

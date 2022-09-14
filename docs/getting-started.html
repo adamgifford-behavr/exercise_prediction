@@ -574,22 +574,41 @@ manually start a run of model scoring.</p>
 <h3>Web service<a class="headerlink" href="#web-service" title="Permalink to this heading">¶</a></h3>
 <section id="id13">
 <h4>Quickstart<a class="headerlink" href="#id13" title="Permalink to this heading">¶</a></h4>
+<p>If you would like to test the web service with your own model (stored in S3 for example),
+you need to create a <cite>.env</cite> file in <cite>src/deployment/web_service/</cite> with the following
+environment variables:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>MODEL_LOCATION=&lt;full bucket path to mlflow models folder&gt;
+AWS_ACCESS_KEY_ID=XXXX
+AWS_SECRET_ACCESS_KEY=XXXX
+AWS_DEFAULT_REGION=XXXX
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">MODEL_LOCATION</span></code> looks something like:
+<cite>s3://&lt;YOUR_BUCKET&gt;/&lt;EXP_ID&gt;/&lt;RUN_ID&gt;/artifacts/models/</cite>.</p>
 <p>For use as a web service, simply run one of the following commands:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>make deploy_web_service
 </pre></div>
 </div>
 <p>or</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span><span class="nb">cd</span> src/deployment/web_service
-<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>docker build -t exercise-prediction-webservice:v1 .
-<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>docker run -itd --rm -p <span class="m">9696</span>:9696 exercise-prediction-webservice:v1
-<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>python test.py
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">    (exercise_prediction) $ cp -R models src/deployment/web_service</span>
+<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span><span class="nb">cd</span> src/deployment/web_service
+<span class="go">    (exercise_prediction) $ docker build -t exercise-prediction-webservice:v1 .</span>
+<span class="go">    (exercise_prediction) $ docker run -itd --rm -p 9696:9696 exercise-prediction-webservice:v1</span>
+<span class="go">    (exercise_prediction) $ python test.py</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">make</span></code> command will automatically run the container with the <cite>.env</cite> file if it
+exists. Otherwise it will run the container with the pretrained model in <cite>models/</cite>.
+However, if you want to start the service step by step from the console, replace the
+<code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span></code> command above with the following:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>docker run -itd --rm -p <span class="m">9696</span>:9696 --env-file .env exercise-prediction-webservice:v1
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The docker container is run in detached mode. Make sure to run <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">stop</span> <span class="pre">...</span></code>
-to stop the container when you complete testing (use <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">ps</span></code> to find the
-container ID).</p>
+to stop the container when you complete testing (see <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">stop</span> <span class="pre">--help</span></code> for
+details).</p>
 </div>
 </section>
 <section id="id14">
