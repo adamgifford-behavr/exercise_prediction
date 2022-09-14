@@ -210,15 +210,20 @@ $ python build_features.py
 
 **Model Training**
 
-For orchestrated training:
+For orchestrated training, in one terminal:
 ```
 $ mlflow server \
     --backend-store-uri postgresql://mlflow:MLFLOW_DB_PW@MLFLOW_DB_URI/mlflow_backend_db \
     --default-artifact-root ROOT_DIRECTORY
+```
+In a second terminal:
+```
 $ prefect config set \
         PREFECT_ORION_UI_API_URL="http://<EXTERNAL-IP>:4200/api"
-    (exercise_prediction) $ prefect orion start --host 0.0.0.0
-$ prefect orion start
+$ prefect orion start --host 0.0.0.0
+```
+In a third terminal:
+```
 $ cd src/orchestration
 $ prefect deployment build \
     orchestrate_train.py:train_flow \
@@ -232,9 +237,11 @@ where ``ROOT_DIRECTORY`` is the directory your artifacts will be stored (general
 `mlruns` or a remote storage container like S3) and ``EXTERNAL-IP`` is the address of
 your cloud (e.g., AWS EC2) instance.
 
+From there, you can start the training manually from the Prefect UI at `http://<EXTERNAL-IP>:4200`.
+
 **Model Deployment**
 
-For orchestrated batch scoring:
+*For orchestrated batch scoring*:
 ```
 $ cd src/deployment/batch
 $ prefect deployment build \
@@ -245,11 +252,26 @@ $ prefect deployment apply score_flow-deployment.yaml
 $ prefect agent start -q 'manual_scoring_flow'
 ```
 
-For web-service deployment:
+From there, you can start the scoring manually from the Prefect UI at `http://<EXTERNAL-IP>:4200`.
 
-``UNDER DEVELOPMENT``
+*For web-service deployment*:<br>
+In one terminal:
 
-For streaming deployment:
+```
+$ cp -R models src/deployment/web_service
+$ cd src/deployment/web_service
+$ docker build -t exercise-prediction-webservice:v1 .
+$ docker run -it --rm -p 9696:9696 exercise-prediction-webservice:v1
+```
+
+Then, in a separate terminal:
+
+```
+$ cd src/deployment/web_service
+$ python test.py
+```
+
+*For streaming deployment*:
 
 ``UNDER DEVELOPMENT``
 

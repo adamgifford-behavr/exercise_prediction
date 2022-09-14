@@ -576,8 +576,8 @@ doesn't exist in the database, the code can create it.
 Model Deployment
 ----------------
 
-Model serving can also deployed in both batch (orchestrated with Prefect) and streaming
-modes (with AWS Kinesis and Lambda functions).
+Model serving can also deployed in batch (orchestrated with Prefect), web-service (in a
+docker container), and streaming (with AWS Kinesis and Lambda functions) modes.
 
 Batch mode
 ~~~~~~~~~~
@@ -625,17 +625,49 @@ requires the same input parameters.
 
 
 Web service
-~~~~~~~~~
+~~~~~~~~~~~
 
 Quickstart
 ^^^^^^^^^^
 
-**WORK IN PROGRESS**
+For use as a web service, simply run one of the following commands:
+
+.. code-block:: console
+
+    (exercise_prediction) $ make deploy_web_service
+
+or
+
+.. code-block:: console
+
+	(exercise_prediction) $ cd src/deployment/web_service
+	(exercise_prediction) $ docker build -t exercise-prediction-webservice:v1 .
+	(exercise_prediction) $ docker run -itd --rm -p 9696:9696 exercise-prediction-webservice:v1
+	(exercise_prediction) $ python test.py
+
+.. note::
+
+    The docker container is run in detached mode. Make sure to run ``docker stop ...``
+    to stop the container when you complete testing (use ``docker ps`` to find the
+    container ID).
 
 The details
 ^^^^^^^^^^^
 
-**WORK IN PROGRESS**
+The web service works by reading in a "packet" of streaming exercise data, performing
+the necessary preprocessing steps of:
+
+1. selecting the appropriate data fields
+2. performing a Fourier transform of the data
+3. selecting the appropriate frequency features
+4. passing the features to ``model.predict()`` to get a prediction for the exercise
+5. returning the prediction
+
+The data "packets" sent to the prediction service correspond to windows of streaming data
+that contain contiguous samples of recordings in order to perform the necessary
+featurizations. The ``predict.py`` app is designed to accept any duration of data (in
+theory), but for example purposes the data sent in ``test.py`` contains 151 contiguous
+samples of data, which is the same number used in the original featurization process.
 
 Streaming
 ~~~~~~~~~

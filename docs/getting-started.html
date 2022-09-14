@@ -531,8 +531,8 @@ naive_frequency_features_predictions_naive_frequency_features_p…</cite> and se
 </section>
 <section id="model-deployment">
 <h2>Model Deployment<a class="headerlink" href="#model-deployment" title="Permalink to this heading">¶</a></h2>
-<p>Model serving can also deployed in both batch (orchestrated with Prefect) and streaming
-modes (with AWS Kinesis and Lambda functions).</p>
+<p>Model serving can also deployed in batch (orchestrated with Prefect), web-service (in a
+docker container), and streaming (with AWS Kinesis and Lambda functions) modes.</p>
 <section id="batch-mode">
 <h3>Batch mode<a class="headerlink" href="#batch-mode" title="Permalink to this heading">¶</a></h3>
 <section id="id11">
@@ -574,11 +574,40 @@ manually start a run of model scoring.</p>
 <h3>Web service<a class="headerlink" href="#web-service" title="Permalink to this heading">¶</a></h3>
 <section id="id13">
 <h4>Quickstart<a class="headerlink" href="#id13" title="Permalink to this heading">¶</a></h4>
-<p><strong>WORK IN PROGRESS</strong></p>
+<p>For use as a web service, simply run one of the following commands:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>make deploy_web_service
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span><span class="nb">cd</span> src/deployment/web_service
+<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>docker build -t exercise-prediction-webservice:v1 .
+<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>docker run -itd --rm -p <span class="m">9696</span>:9696 exercise-prediction-webservice:v1
+<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>python test.py
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The docker container is run in detached mode. Make sure to run <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">stop</span> <span class="pre">...</span></code>
+to stop the container when you complete testing (use <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">ps</span></code> to find the
+container ID).</p>
+</div>
 </section>
 <section id="id14">
 <h4>The details<a class="headerlink" href="#id14" title="Permalink to this heading">¶</a></h4>
-<p><strong>WORK IN PROGRESS</strong></p>
+<p>The web service works by reading in a “packet” of streaming exercise data, performing
+the necessary preprocessing steps of:</p>
+<ol class="arabic simple">
+<li><p>selecting the appropriate data fields</p></li>
+<li><p>performing a Fourier transform of the data</p></li>
+<li><p>selecting the appropriate frequency features</p></li>
+<li><p>passing the features to <code class="docutils literal notranslate"><span class="pre">model.predict()</span></code> to get a prediction for the exercise</p></li>
+<li><p>returning the prediction</p></li>
+</ol>
+<p>The data “packets” sent to the prediction service correspond to windows of streaming data
+that contain contiguous samples of recordings in order to perform the necessary
+featurizations. The <code class="docutils literal notranslate"><span class="pre">predict.py</span></code> app is designed to accept any duration of data (in
+theory), but for example purposes the data sent in <code class="docutils literal notranslate"><span class="pre">test.py</span></code> contains 151 contiguous
+samples of data, which is the same number used in the original featurization process.</p>
 </section>
 </section>
 <section id="streaming">
