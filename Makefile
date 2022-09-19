@@ -126,7 +126,7 @@ else
 	prefect agent start -q 'manual_scoring_flow'
 endif
 
-deploy_web_service:
+deploy_web:
 	cp -R models src/deployment/web_service ; \
 	cd src/deployment/web_service ; \
 	docker build -t exercise-prediction-webservice:v1 . ; \
@@ -138,6 +138,20 @@ deploy_web_service:
 	echo ">>> pinging prediction service..." ; \
 	sleep 2 ; \
 	python test.py
+
+deploy_streaming:
+	cp -R models src/deployment/streaming ; \
+	cd src/deployment/streaming ; \
+	docker build -t exercise-prediction-streaming:v1 . ; \
+	if [ -f .env ]; then \
+		docker run -itd --rm -p 8080:8080 --env-file .env exercise-prediction-streaming:v1 ; \
+	else \
+		docker run -itd --rm -p 8080:8080 exercise-prediction-streaming:v1 ; \
+	fi ; \
+	echo ">>> pinging streaming service..." ; \
+	sleep 2 ; \
+	python test_docker.py
+
 
 ## simulate streaming monitoring service
 docker_monitor:

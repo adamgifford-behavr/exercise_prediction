@@ -586,7 +586,7 @@ AWS_DEFAULT_REGION=XXXX
 <p>where <code class="docutils literal notranslate"><span class="pre">MODEL_LOCATION</span></code> looks something like:
 <cite>s3://&lt;YOUR_BUCKET&gt;/&lt;EXP_ID&gt;/&lt;RUN_ID&gt;/artifacts/models/</cite>.</p>
 <p>For use as a web service, simply run one of the following commands:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>make deploy_web_service
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>make deploy_web
 </pre></div>
 </div>
 <p>or</p>
@@ -595,6 +595,13 @@ AWS_DEFAULT_REGION=XXXX
 <span class="go">    (exercise_prediction) $ docker build -t exercise-prediction-webservice:v1 .</span>
 <span class="go">    (exercise_prediction) $ docker run -itd --rm -p 9696:9696 exercise-prediction-webservice:v1</span>
 <span class="go">    (exercise_prediction) $ python test.py</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">make</span></code> command will automatically run the container with the <cite>.env</cite> file if it
+exists. Otherwise it will run the container with the pretrained model in <cite>models/</cite>.
+However, if you want to start the service step by step from the console, replace the
+<code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span></code> command above with the following:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>docker run -itd --rm -p <span class="m">9696</span>:9696 --env-file .env exercise-prediction-webservice:v1
 </pre></div>
 </div>
 <div class="admonition note">
@@ -626,11 +633,44 @@ samples of data, which is the same number used in the original featurization pro
 <h3>Streaming<a class="headerlink" href="#streaming" title="Permalink to this heading">¶</a></h3>
 <section id="id15">
 <h4>Quickstart<a class="headerlink" href="#id15" title="Permalink to this heading">¶</a></h4>
-<p><strong>WORK IN PROGRESS</strong></p>
+<p>If you would like to test the containerized streaming service with your own model (stored
+in S3 for example), you need to create a <cite>.env</cite> file in <cite>src/deployment/streaming/</cite>
+with the following environment variable:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>MODEL_LOCATION=&lt;full bucket path to mlflow models folder&gt;
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">MODEL_LOCATION</span></code> looks something like:
+<cite>s3://&lt;YOUR_BUCKET&gt;/&lt;EXP_ID&gt;/&lt;RUN_ID&gt;/artifacts/models/</cite>.</p>
+<p>For use as a streaming service, simply run one of the following commands:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>make deploy_streaming
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>cp -R models src/deployment/streaming
+<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span><span class="nb">cd</span> src/deployment/streaming
+<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>docker build -t exercise-prediction-streaming:v1 .
+<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>docker run -itd --rm -p <span class="m">8080</span>:8080 exercise-prediction-streaming:v1
+<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>python test_docker.py
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">make</span></code> command will automatically run the container with the <cite>.env</cite> file if it
+exists. Otherwise it will run the container with the pretrained model in <cite>models/</cite>.
+However, if you want to start the service step by step from the console, replace the
+<code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">run</span></code> command above with the following:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>docker run -itd --rm -p <span class="m">8080</span>:8080 --env-file .env exercise-prediction-streaming:v1
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The docker container is run in detached mode. Make sure to run <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">stop</span> <span class="pre">...</span></code>
+to stop the container when you complete testing (see <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">stop</span> <span class="pre">--help</span></code> for
+details).</p>
+</div>
 </section>
 <section id="id16">
 <h4>The details<a class="headerlink" href="#id16" title="Permalink to this heading">¶</a></h4>
-<p><strong>WORK IN PROGRESS</strong></p>
+<p>The streaming service works similarly to the web service, except for essentially employing
+AWS Lambda as the “web service” rather than a custom service via Flask.</p>
 </section>
 </section>
 </section>

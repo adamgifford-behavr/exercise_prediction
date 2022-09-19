@@ -648,7 +648,7 @@ For use as a web service, simply run one of the following commands:
 
 .. code-block:: console
 
-    (exercise_prediction) $ make deploy_web_service
+    (exercise_prediction) $ make deploy_web
 
 or
 
@@ -699,12 +699,53 @@ Streaming
 Quickstart
 ^^^^^^^^^^
 
-**WORK IN PROGRESS**
+If you would like to test the containerized streaming service with your own model (stored
+in S3 for example), you need to create a `.env` file in `src/deployment/streaming/`
+with the following environment variable:
+
+.. code-block:: text
+
+    MODEL_LOCATION=<full bucket path to mlflow models folder>
+
+where ``MODEL_LOCATION`` looks something like:
+`s3://<YOUR_BUCKET>/<EXP_ID>/<RUN_ID>/artifacts/models/`.
+
+For use as a streaming service, simply run one of the following commands:
+
+.. code-block:: console
+
+    (exercise_prediction) $ make deploy_streaming
+
+or
+
+.. code-block:: console
+
+	(exercise_prediction) $ cp -R models src/deployment/streaming
+	(exercise_prediction) $ cd src/deployment/streaming
+	(exercise_prediction) $ docker build -t exercise-prediction-streaming:v1 .
+	(exercise_prediction) $ docker run -itd --rm -p 8080:8080 exercise-prediction-streaming:v1
+	(exercise_prediction) $ python test_docker.py
+
+The ``make`` command will automatically run the container with the `.env` file if it
+exists. Otherwise it will run the container with the pretrained model in `models/`.
+However, if you want to start the service step by step from the console, replace the
+``docker run`` command above with the following:
+
+.. code-block:: console
+
+    (exercise_prediction) $ docker run -itd --rm -p 8080:8080 --env-file .env exercise-prediction-streaming:v1
+
+.. note::
+
+    The docker container is run in detached mode. Make sure to run ``docker stop ...``
+    to stop the container when you complete testing (see ``docker stop --help`` for
+    details).
 
 The details
 ^^^^^^^^^^^
 
-**WORK IN PROGRESS**
+The streaming service works similarly to the web service, except for essentially employing
+AWS Lambda as the "web service" rather than a custom service via Flask.
 
 Monitoring
 ----------

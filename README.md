@@ -270,7 +270,16 @@ once finished testing. See ``docker stop --help`` for details.
 
 *For streaming deployment*:
 
-``UNDER DEVELOPMENT``
+```
+(exercise_prediction) $ cp -R models src/deployment/streaming
+(exercise_prediction) $ cd src/deployment/streaming
+(exercise_prediction) $ docker build -t exercise-prediction-streaming:v1 .
+(exercise_prediction) $ docker run -itd --rm -p 8080:8080 exercise-prediction-streaming:v1
+(exercise_prediction) $ python test_docker.py
+```
+
+The Docker container is run in detached mode, use ``docker stop ...`` to stop the container
+once finished testing. See ``docker stop --help`` for details.
 
 **Model Monitoring**
 

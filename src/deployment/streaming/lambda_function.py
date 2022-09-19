@@ -15,7 +15,7 @@ from aws_lambda_typing import events
 kinesis_client = boto3.client("kinesis")
 
 TEST_RUN = os.getenv("TEST_RUN", "False") == "True"
-PREDICTIONS_STREAM_NAME = os.getenv("PREDICTIONS_STREAM_NAME")
+PREDICTIONS_STREAM_NAME = os.getenv("PREDICTIONS_STREAM_NAME", "predictions-stream")
 
 with open("frequency_features.json", "r", encoding="utf-8") as infile:
     DESIRED_FREQS = json.load(infile)
@@ -44,7 +44,7 @@ DT = np.dtype(
     ]
 )
 
-logged_model = os.getenv("MODEL_LOCATION")
+logged_model = os.getenv("MODEL_LOCATION", "models/")
 model = mlflow.pyfunc.load_model(logged_model)
 
 
