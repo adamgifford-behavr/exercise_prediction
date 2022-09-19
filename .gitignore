@@ -100,6 +100,7 @@ target/
 # extra copies of model in monitoring
 src/monitor/prediction_service/models
 src/deployment/web_service/models
+src/deployment/streaming/models
 
 # system-specific config files
 **/*-deployment.yaml
