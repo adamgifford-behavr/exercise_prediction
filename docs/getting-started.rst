@@ -736,12 +736,13 @@ to test the monitoring functionality without running through the rest of the pip
     pipeline, you must manually copy your `models` (or similarly saved model folder)
     from your model registry/artifact store into `src/monitor/prediction_service/`. The
     prediction services uses ``mlflow.pyfunc.load_model()`` under the hood, so the contents
-    of the `models` folder should conform to the requirements necessary for MLflow. The
-    prediction service is designed to connect to an S3 bucket if you'd prefer to load the
-    model from S3. In order to do that, you must fill in the `environment` variables
-    ``MODEL_LOCATION``, ``AWS_ACCESS_KEY_ID``, ``AWS_SECRET_ACCESS_KEY``, and
-    ``AWS_DEFAULT_REGION`` in `src/monitor/docker-compose.yml`, where ``MODEL_LOCATION``
-    is the full s3 path to your `models` folder.
+    of the `models` folder should conform to the requirements necessary for MLflow.
+    Alternatively, the prediction service is designed to connect to an S3 bucket if you'd
+    prefer to load the model from S3. In order to do that, you must fill in the
+    `environment` variables ``MODEL_LOCATION``, ``AWS_ACCESS_KEY_ID``,
+    ``AWS_SECRET_ACCESS_KEY``, and ``AWS_DEFAULT_REGION`` in
+    `src/monitor/docker-compose.yml`, where ``MODEL_LOCATION`` is the full s3 path to
+    your `models` folder.
 
 Infrastructure
 --------------

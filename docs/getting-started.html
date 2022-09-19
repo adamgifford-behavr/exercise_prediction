@@ -579,10 +579,11 @@ manually start a run of model scoring.</p>
 </pre></div>
 </div>
 <p>or</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span><span class="nb">cd</span> src/deployment/web_service
-<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>docker build -t exercise-prediction-webservice:v1 .
-<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>docker run -itd --rm -p <span class="m">9696</span>:9696 exercise-prediction-webservice:v1
-<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>python test.py
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">    (exercise_prediction) $ cp -R models src/deployment/web_service</span>
+<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span><span class="nb">cd</span> src/deployment/web_service
+<span class="go">    (exercise_prediction) $ docker build -t exercise-prediction-webservice:v1 .</span>
+<span class="go">    (exercise_prediction) $ docker run -itd --rm -p 9696:9696 exercise-prediction-webservice:v1</span>
+<span class="go">    (exercise_prediction) $ python test.py</span>
 </pre></div>
 </div>
 <div class="admonition note">
@@ -664,12 +665,13 @@ to test the monitoring functionality without running through the rest of the pip
 pipeline, you must manually copy your <cite>models</cite> (or similarly saved model folder)
 from your model registry/artifact store into <cite>src/monitor/prediction_service/</cite>. The
 prediction services uses <code class="docutils literal notranslate"><span class="pre">mlflow.pyfunc.load_model()</span></code> under the hood, so the contents
-of the <cite>models</cite> folder should conform to the requirements necessary for MLflow. The
-prediction service is designed to connect to an S3 bucket if you’d prefer to load the
-model from S3. In order to do that, you must fill in the <cite>environment</cite> variables
-<code class="docutils literal notranslate"><span class="pre">MODEL_LOCATION</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY_ID</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_SECRET_ACCESS_KEY</span></code>, and
-<code class="docutils literal notranslate"><span class="pre">AWS_DEFAULT_REGION</span></code> in <cite>src/monitor/docker-compose.yml</cite>, where <code class="docutils literal notranslate"><span class="pre">MODEL_LOCATION</span></code>
-is the full s3 path to your <cite>models</cite> folder.</p>
+of the <cite>models</cite> folder should conform to the requirements necessary for MLflow.
+Alternatively, the prediction service is designed to connect to an S3 bucket if you’d
+prefer to load the model from S3. In order to do that, you must fill in the
+<cite>environment</cite> variables <code class="docutils literal notranslate"><span class="pre">MODEL_LOCATION</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY_ID</span></code>,
+<code class="docutils literal notranslate"><span class="pre">AWS_SECRET_ACCESS_KEY</span></code>, and <code class="docutils literal notranslate"><span class="pre">AWS_DEFAULT_REGION</span></code> in
+<cite>src/monitor/docker-compose.yml</cite>, where <code class="docutils literal notranslate"><span class="pre">MODEL_LOCATION</span></code> is the full s3 path to
+your <cite>models</cite> folder.</p>
 </div>
 </section>
 </section>
