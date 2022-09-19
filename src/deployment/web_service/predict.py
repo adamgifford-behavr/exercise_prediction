@@ -129,7 +129,7 @@ def _calculate_single_window_features(X_w: np.ndarray, freq_ixs: list) -> list:
     return flat_feats
 
 
-def prepare_data(records: dict) -> np.ndarray:
+def prepare_data(records: list[dict]) -> np.ndarray:
     """
     It takes a list of dictionaries, and returns a numpy array (after removing non-data
     fields).

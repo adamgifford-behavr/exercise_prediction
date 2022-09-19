@@ -2,8 +2,6 @@
 
 FROM python:3.8-slim-buster
 
-ARG MODEL_LOCATION
-
 WORKDIR /app
 
 COPY requirements.txt .
