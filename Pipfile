@@ -1,0 +1,44 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+aws-lambda-typing = "*"
+bandit = "*"
+boto3 = "*"
+click = "*"
+coverage = "*"
+deepdiff = "*"
+evidently = "*"
+fastparquet = "*"
+flask = "*"
+hyperopt = "*"
+isort = "*"
+jupyterlab = "*"
+mlflow = "*"
+mypy = "*"
+nbdime = "*"
+pandas = "*"
+pipenv = "*"
+pre-commit = "*"
+prefect = "==2.2"
+prometheus-client = "*"
+psycopg2-binary = "*"
+pyarrow = "*"
+pylint = "*"
+pymongo = "*"
+pytest = "*"
+python-dotenv = "*"
+pyyaml = "*"
+requests = "*"
+s3fs = "*"
+scikit-learn = "==1.0.2"
+sphinx = "*"
+sqlalchemy = "*"
+werkzeug = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.10"
