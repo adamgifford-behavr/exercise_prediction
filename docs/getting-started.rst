@@ -698,17 +698,15 @@ Streaming
 
 Quickstart
 ^^^^^^^^^^
-
-If you would like to test the containerized streaming service with your own model (stored
-in S3 for example), you need to create a `.env` file in `src/deployment/streaming/`
-with the following environment variable:
+If you would like to test the containerized streaming service with your own model
+(stored in S3 for example), create a `.env` file in `src/deployment/streaming/` with the
+following environment variables:
 
 .. code-block:: text
 
-    MODEL_LOCATION=<full bucket path to mlflow models folder>
-
-where ``MODEL_LOCATION`` looks something like:
-`s3://<YOUR_BUCKET>/<EXP_ID>/<RUN_ID>/artifacts/models/`.
+    MODEL_BUCKET=<s3 bucket name here>
+    MLFLOW_EXPERIMENT_ID=<experiment number here>
+    RUN_ID=<run id here>
 
 For use as a streaming service, simply run one of the following commands:
 
@@ -728,8 +726,8 @@ or
 
 The ``make`` command will automatically run the container with the `.env` file if it
 exists. Otherwise it will run the container with the pretrained model in `models/`.
-However, if you want to start the service step by step from the console, replace the
-``docker run`` command above with the following:
+However, if you want to start the service step by step from the console and use your own
+.env` file, replace the ``docker run`` command above with the following:
 
 .. code-block:: console
 
