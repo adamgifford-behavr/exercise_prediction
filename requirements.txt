@@ -15,6 +15,7 @@ isort
 jupyterlab
 mlflow
 mypy
+mypy-boto3-kinesis
 nbdime
 pandas
 pipenv
