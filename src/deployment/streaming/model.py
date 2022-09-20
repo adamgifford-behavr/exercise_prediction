@@ -84,15 +84,17 @@ def get_model_location(run_id: str) -> str:
     Returns:
       The model location is being returned.
     """
-    model_location = os.getenv("MODEL_LOCATION")
-
-    if model_location is not None:
-        return model_location
 
     model_bucket = os.getenv("MODEL_BUCKET")
     experiment_id = os.getenv("MLFLOW_EXPERIMENT_ID")
 
-    model_location = f"s3://{model_bucket}/{experiment_id}/{run_id}/artifacts/models/"
+    if model_bucket and experiment_id:
+        model_location = (
+            f"s3://{model_bucket}/{experiment_id}/{run_id}/artifacts/models/"
+        )
+    else:
+        model_location = os.getenv("MODEL_LOCATION", "models/")
+
     return model_location
 
 
