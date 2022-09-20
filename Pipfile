@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+aws-lambda-typing = "*"
 boto3 = "*"
 click = "*"
 evidently = "*"
@@ -11,6 +12,7 @@ fastparquet = "*"
 flask = "*"
 hyperopt = "*"
 mlflow = "*"
+mypy-boto3-kinesis = "*"
 pandas = "*"
 prefect = "==2.2"
 prometheus-client = "*"
@@ -25,7 +27,6 @@ sqlalchemy = "*"
 werkzeug = "*"
 
 [dev-packages]
-aws-lambda-typing = "*"
 bandit = "*"
 coverage = "*"
 deepdiff = "*"

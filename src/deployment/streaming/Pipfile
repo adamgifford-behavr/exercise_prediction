@@ -8,6 +8,7 @@ boto3 = "*"
 mlflow = "*"
 scikit-learn = "==1.0.2"
 aws-lambda-typing = "*"
+mypy-boto3-kinesis = "*"
 
 [dev-packages]
 requests = "*"

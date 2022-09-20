@@ -13,5 +13,6 @@ RUN pipenv install --system --deploy
 COPY lambda_function.py .
 COPY models ./models
 COPY frequency_features.json .
+COPY model.py .
 
 CMD [ "lambda_function.lambda_handler" ]
