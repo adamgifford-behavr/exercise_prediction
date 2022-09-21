@@ -153,7 +153,7 @@ PARQUET files into one of 4 groups:
 - "train": for model training;
 - "validation": for model validation and hyperparameter tuning;
 - "test": for model testing and comparing among different model flavors;
-- "simulate": for simulating "real-world" streaming and/or batch model serving.
+- "simulate": for simulating "real-world" web-service, streaming and batch model serving.
 
 This file is a necessary input for `src/features/build_features.py`.
 
@@ -440,6 +440,7 @@ Quickstart
 For orchestrated model training, you also need start a Prefect server:
 
 .. code-block:: console
+
     (exercise_prediction) $ prefect config set \
         PREFECT_ORION_UI_API_URL="http://EXTERNAL-IP:4200/api"
     (exercise_prediction) $ prefect orion start --host 0.0.0.0
@@ -743,7 +744,11 @@ The details
 ^^^^^^^^^^^
 
 The streaming service works similarly to the web service, except for essentially employing
-AWS Lambda as the "web service" rather than a custom service via Flask.
+AWS Lambda as the "web service" rather than a custom service via Flask. The service runs
+in "test" mode by default (which does not attempt to put records to a predictions stream).
+If you would like to test putting records to a stream you created, make sure the environment
+variables ``PREDICTIONS_STREAM_NAME``, ``AWS_ACCESS_KEY_ID``, ``AWS_SECRET_ACCESS_KEY``,
+and ``AWS_DEFAULT_REGION`` are appropriately defined in your `.env` file.
 
 Monitoring
 ----------
@@ -837,10 +842,9 @@ The details
 ^^^^^^^^^^^
 
 The tests will likely not pass until the following criteria are met:
-1. The dataset is converted from a MATLAB file to a series of PARQUET files via: ``make data``
-  (this creates the `datafile_group_splits.json` file necessary for validation).
-2. The data is featurized via: ``make features`` (this provides the potentially system-
-  specific ``FEATURIZE_ID`` for the featurization process).
+
+1. The dataset is converted from a MATLAB file to a series of PARQUET files via: ``make data`` (this creates the `datafile_group_splits.json` file necessary for validation).
+2. The data is featurized via: ``make features`` (this provides the potentially system-specific ``FEATURIZE_ID`` for the featurization process).
 3. ``FEATURIZE_ID`` is added as an environment variable in ``.env``.
 
 Quality Checks
@@ -869,10 +873,53 @@ or
 
 .. code-block:: console
 
-    (exercise_prediction) $ isort src
-    (exercise_prediction) $ black src
-    (exercise_prediction) $ pylint src
-    (exercise_prediction) $ mypy src
-    (exercise_prediction) $ bandit -r src
+	(exercise_prediction) $ isort --line-length=88 src
+	(exercise_prediction) $ black --line-length=88 src
+	(exercise_prediction) $ pylint -rn -sn --ignore-paths=tests,integration_tests src
+	(exercise_prediction) $ mypy --no-strict-optional --ignore-missing-imports --exclude "app.py" --exclude "^tests/" --exclude "^integration_tests/" src
+	(exercise_prediction) $ bandit -r -x tests,integration_tests src
+
+
+Publishing
+----------
+
+`---`
+~~~~~
+
+Quickstart
+^^^^^^^^^^
+
+For publishing the streaming service Docker container image you will first need to create
+an Amazon ECR repository:
+
+.. code-block:: console
+
+    (exercise_prediction) $ aws ecr create-repository --repository-name <repository_name>
+
+Next, set the following environment variables:
+
+.. code-block:: console
+
+    (exercise_prediction) $ export AWS_ACCOUNT_ID=<your_account_id>
+    (exercise_prediction) $ export AWS_DEFAULT_REGION=<your_default_region>
+    (exercise_prediction) $ export REPOSITORY=<repository_name>
+
+Finally, to actually publish the image, run:
+
+.. code-block:: console
+
+    (exercise_prediction) $ make publish
+
+The details
+^^^^^^^^^^^
+
+Running ``make publish`` automatically the following other commands:
+
+1. ``make quality_checks`` to run code quality checks,
+2. ``make code_tests`` to run unit tests with coverage reports,
+3. ``make build`` to build the docker image, and
+4. ``make integration_tests`` to test the streaming integration with localstack
+
+If any of these previous commands fail, the image will not be pushed to the repository.
 
 Fin.

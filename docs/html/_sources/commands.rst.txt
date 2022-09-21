@@ -10,6 +10,8 @@ Syncing data to S3
 * `make create_environment` will create an empty virtual environment with either ``conda``
   or ``virtualenv``
 * `make requirements` will install all python dependencies for the project
+* `make setup` to alternatively install dev requirements and create a virtual environment
+  with ``pipenv``
 * `make sync_data_to_s3` will use `aws s3 sync` to recursively sync files in `data/` up
   to your specified AWS S3 bucket (requires environment variables ``S3_BUCKET`` and
   ``AWS_CONFIG_PATH``, see :ref:`Getting Started: Installation <getting-started:installation>`).
@@ -23,8 +25,17 @@ Syncing data to S3
   deploy an orchestrated model training flow with Prefect, respectively
 * `make stand_alone_score_batch` or `make deploy_score_batch` to run stand-alone batch model
   scoring or to deploy an orchestrated bactch scoring flow with Prefect, respectively
+* `make deploy_web` to deploy the model as a web service
+* `make deploy_streaming` to deploy the model as a streaming service
 * `make docker_monitor` to run a simulated streaming monitoring service with Evidently
 * `make quality_checks` to run code quality checks with ``isort``, ``black``, ``pylint``,
   ``mypy``, and ``bandit``
 * `make code_tests` to run code testing with ``coverage`` and ``pytest``
+* `make build` to build a Docker container image for the streaming service (will
+  automatically call `make quality_checks` and `make code_tests`)
+* `make integration_tests` to test the containerized streaming service with localstack
+  (will automatically call `make build`)
+* `make publish` to publish the containerized streaming service to Amazon ECR (will
+  automatically call `make quality_checks`, `make code_tests`, `make build`, and
+  `make integration_tests`)
 * `make clean` to delete all compiled Python files

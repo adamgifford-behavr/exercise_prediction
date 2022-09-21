@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Getting started &#8212; Python  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -34,9 +35,9 @@
           <div class="body" role="main">
 
   <section id="getting-started">
-<h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this heading">¶</a></h1>
 <section id="problem-description">
-<h2>Problem description<a class="headerlink" href="#problem-description" title="Permalink to this headline">¶</a></h2>
+<h2>Problem description<a class="headerlink" href="#problem-description" title="Permalink to this heading">¶</a></h2>
 <p>This project aims to utilize accelerometer and gyroscope data from wearable
 sensors to predict exercise categories. It uses the <a class="reference external" href="https://msropendata.com/datasets/799c1167-2c8f-44c4-929c-227bf04e2b9a">“Exercise Recognition from
 Wearable Sensors”</a>
@@ -49,7 +50,7 @@ goal of this project is the ability to simulate streaming sensor data
 and generate “live” predictions of the exercise activity.</p>
 </section>
 <section id="installation">
-<span id="id1"></span><h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">¶</a></h2>
 <p>1. Clone the directory from <a class="reference external" href="https://github.com/adamgifford-behavr/exercise_prediction.git">my GitHub page</a>.</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(base)</span> <span class="gp">$ </span>git clone https://github.com/adamgifford-behavr/exercise_prediction.git
 </pre></div>
@@ -108,7 +109,7 @@ MLFLOW_DB_PW=&lt;password here&gt;
 to start the MLflow server.</p>
 </div>
 <section id="optional">
-<h3>Optional<a class="headerlink" href="#optional" title="Permalink to this headline">¶</a></h3>
+<h3>Optional<a class="headerlink" href="#optional" title="Permalink to this heading">¶</a></h3>
 <p>If you would like to be able to sync your data to an S3 bucket, you will need to also set
 the following environment variables:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span><span class="nb">export</span> <span class="nv">S3_BUCKET</span><span class="o">=</span>&lt;s3_bucket_name/&gt;
@@ -120,9 +121,9 @@ typically <cite>default</cite> by default).</p>
 </section>
 </section>
 <section id="data-processing">
-<h2>Data Processing<a class="headerlink" href="#data-processing" title="Permalink to this headline">¶</a></h2>
+<h2>Data Processing<a class="headerlink" href="#data-processing" title="Permalink to this heading">¶</a></h2>
 <section id="preprocessing-the-data">
-<h3>Preprocessing the data<a class="headerlink" href="#preprocessing-the-data" title="Permalink to this headline">¶</a></h3>
+<h3>Preprocessing the data<a class="headerlink" href="#preprocessing-the-data" title="Permalink to this heading">¶</a></h3>
 <p>You first need to load, restructure, and convert the raw data that is in
 MATLAB’s data format into a series of PARQUET files that will make further
 processing easier. We are working solely on the raw data file
@@ -131,7 +132,7 @@ across all test subjects for a variety “real-world environment” activities.
 The module src/data/make_dataset.py handles this preprocessing and stores
 the resulting files in data/interim.</p>
 <section id="quickstart">
-<h4>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h4>
+<h4>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this heading">¶</a></h4>
 <p>To process the data, simply run either:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>make data
 </pre></div>
@@ -143,7 +144,7 @@ the resulting files in data/interim.</p>
 </div>
 </section>
 <section id="the-details">
-<h4>The details<a class="headerlink" href="#the-details" title="Permalink to this headline">¶</a></h4>
+<h4>The details<a class="headerlink" href="#the-details" title="Permalink to this heading">¶</a></h4>
 <p>If you would like more reference on how the raw MATLAB files are structured, see
 <code class="docutils literal notranslate"><span class="pre">notebooks/0-setup/0.1-agifford-TestLoadMatFileAndVerify.ipynb</span></code>. Running <code class="docutils literal notranslate"><span class="pre">make_dataset.py</span></code>
 also produces the file <cite>src/features/datafile_group_splits.json</cite>, which splits each
@@ -152,16 +153,16 @@ PARQUET files into one of 4 groups:</p>
 <li><p>“train”: for model training;</p></li>
 <li><p>“validation”: for model validation and hyperparameter tuning;</p></li>
 <li><p>“test”: for model testing and comparing among different model flavors;</p></li>
-<li><p>“simulate”: for simulating “real-world” streaming and/or batch model serving.</p></li>
+<li><p>“simulate”: for simulating “real-world” web-service, streaming and batch model serving.</p></li>
 </ul>
 <p>This file is a necessary input for <cite>src/features/build_features.py</cite>.</p>
 </section>
 </section>
 <section id="building-the-features">
-<h3>Building the features<a class="headerlink" href="#building-the-features" title="Permalink to this headline">¶</a></h3>
+<h3>Building the features<a class="headerlink" href="#building-the-features" title="Permalink to this heading">¶</a></h3>
 <p>Next, we build frequency features from the raw signals to use in our modeling.</p>
 <section id="id2">
-<h4>Quickstart<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<h4>Quickstart<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h4>
 <p>To run the code, run either:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>make features
 </pre></div>
@@ -180,7 +181,7 @@ store it in .env as:</p>
 </div>
 </section>
 <section id="id3">
-<h4>The details<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<h4>The details<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h4>
 <p>The logic of the analysis is as follows:</p>
 <ul class="simple">
 <li><p>for each file, signals are binned into 3-second windows (see
@@ -223,7 +224,7 @@ processes).</p>
 </section>
 </section>
 <section id="model-training">
-<h2>Model Training<a class="headerlink" href="#model-training" title="Permalink to this headline">¶</a></h2>
+<h2>Model Training<a class="headerlink" href="#model-training" title="Permalink to this heading">¶</a></h2>
 <p>Model training can be performed in stand-alone mode (i.e., running locally with no
 orchestration) or with orchestration via Prefect. The end result is a series of mlflow
 runs to identify the best hyperparameters for the classifier and the “best” mode promoted
@@ -259,9 +260,9 @@ are optional for if you are deploying the tracking server to the cloud.</p>
 explicitly defined if you’d like to change the name of the experiment. If changed, just
 make sure it remains the same for subsequent model scoring and monitoring (see below).</p>
 <section id="stand-alone-training">
-<h3>Stand-alone training<a class="headerlink" href="#stand-alone-training" title="Permalink to this headline">¶</a></h3>
+<h3>Stand-alone training<a class="headerlink" href="#stand-alone-training" title="Permalink to this heading">¶</a></h3>
 <section id="id4">
-<h4>Quickstart<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<h4>Quickstart<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h4>
 <p>To run the training in stand-alone mode, run either:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>make stand_alone_train
 </pre></div>
@@ -287,7 +288,7 @@ of the necessary json inputs (see below).</p>
 <span class="sig-prename descclassname"><span class="pre">src.models.</span></span><span class="sig-name descname"><span class="pre">train_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.models.train_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of random ingredients as strings.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>table_name</strong> (<em>str</em>) – the name of the table in the database that contains the data</p></li>
 <li><p><strong>label_col</strong> (<em>str</em>) – the name of the column in the data that contains the labels</p></li>
@@ -298,7 +299,7 @@ contains starting points for hyperparameter values for fitting procedure (e.g., 
 use values from previous fit to potentially speed up fitting). Defaults to None</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
 </dd>
 </dl>
@@ -306,7 +307,7 @@ use values from previous fit to potentially speed up fitting). Defaults to None<
 
 </section>
 <section id="id5">
-<h4>The details<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
+<h4>The details<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h4>
 <p>The file identified by <code class="docutils literal notranslate"><span class="pre">model_search_json</span></code> contains the following information:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="nt">&quot;fixed_paramaters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
@@ -407,11 +408,16 @@ using python directly or add an extra line to the <code class="docutils literal 
 </section>
 </section>
 <section id="orchestrated-training">
-<h3>Orchestrated training<a class="headerlink" href="#orchestrated-training" title="Permalink to this headline">¶</a></h3>
+<h3>Orchestrated training<a class="headerlink" href="#orchestrated-training" title="Permalink to this heading">¶</a></h3>
 <p>Alternatively, model training can be orchestrated via Prefect.</p>
 <section id="id6">
-<h4>Quickstart<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
+<h4>Quickstart<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h4>
 <p>For orchestrated model training, you also need start a Prefect server:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>prefect config <span class="nb">set</span> <span class="se">\</span>
+    <span class="nv">PREFECT_ORION_UI_API_URL</span><span class="o">=</span><span class="s2">&quot;http://EXTERNAL-IP:4200/api&quot;</span>
+<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>prefect orion start --host <span class="m">0</span>.0.0.0
+</pre></div>
+</div>
 <p>where <code class="docutils literal notranslate"><span class="pre">EXTERNAL-IP</span></code> is the address of your cloud (e.g., AWS EC2) instance.</p>
 <p>Next, you have the option to set up a cloud storage block to log flow run data. Follow
 the instructions from <a class="reference external" href="https://docs.prefect.io/tutorials/storage/">this site</a> if you
@@ -438,7 +444,7 @@ is the name of the block you created.</p>
 </div>
 </section>
 <section id="id7">
-<h4>The details<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h4>
+<h4>The details<a class="headerlink" href="#id7" title="Permalink to this heading">¶</a></h4>
 <p>Running orchestrated training simply calls <code class="docutils literal notranslate"><span class="pre">orchestrate_train.train_flow()</span></code>, which
 is a copy of <code class="docutils literal notranslate"><span class="pre">train_model.main()</span></code> with Prefect flow and task decorators. As such, it
 requires the same input parameters. The first 3 (<code class="docutils literal notranslate"><span class="pre">table_name</span></code>, <code class="docutils literal notranslate"><span class="pre">label_col</span></code>, and
@@ -456,7 +462,7 @@ a run of model training.</p>
 </section>
 </section>
 <section id="stand-alone-model-serving">
-<h2>Stand-Alone Model Serving<a class="headerlink" href="#stand-alone-model-serving" title="Permalink to this headline">¶</a></h2>
+<h2>Stand-Alone Model Serving<a class="headerlink" href="#stand-alone-model-serving" title="Permalink to this heading">¶</a></h2>
 <p>Model Serving can be performed in stand-alone mode with batch scoring. The end result is
 to test the “Production” model on simulated new data that was preprocessed by
 <code class="docutils literal notranslate"><span class="pre">build_features.py</span></code>.</p>
@@ -473,9 +479,9 @@ thus you will have to manually promote the best model from <code class="docutils
 in the MLflow model registry from “Staging” to “Production”.</p>
 </div>
 <section id="id8">
-<h3><cite>—</cite><a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<h3><cite>—</cite><a class="headerlink" href="#id8" title="Permalink to this heading">¶</a></h3>
 <section id="id9">
-<h4>Quickstart<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h4>
+<h4>Quickstart<a class="headerlink" href="#id9" title="Permalink to this heading">¶</a></h4>
 <p>To begin model scoring, using either:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>make stand_alone_score_batch
 </pre></div>
@@ -486,7 +492,7 @@ in the MLflow model registry from “Staging” to “Production”.</p>
 </div>
 </section>
 <section id="id10">
-<h4>The details<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h4>
+<h4>The details<a class="headerlink" href="#id10" title="Permalink to this heading">¶</a></h4>
 <p><code class="docutils literal notranslate"><span class="pre">score_batch.py</span></code> requires the following inputs:</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="src.models.batch_score">
@@ -494,7 +500,7 @@ in the MLflow model registry from “Staging” to “Production”.</p>
 <dd><p>It loads simulated batch data from a table in the database, applies a model to it,
 and writes the predictions to a table in the database</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>feature_table</strong> (<em>str</em>) – the name of the table in the feature store to load the
 data for scoring. Defaults to naive_frequency_features</p></li>
@@ -507,7 +513,7 @@ exercise_prediction_naive_feats_pipe</p></li>
 <li><p><strong>model_stage</strong> (<em>str</em>) – the stage of the model in the model registry. Defaults to Production</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
 </dd>
 </dl>
@@ -529,13 +535,13 @@ naive_frequency_features_predictions_naive_frequency_features_p…</cite> and se
 </section>
 </section>
 <section id="model-deployment">
-<h2>Model Deployment<a class="headerlink" href="#model-deployment" title="Permalink to this headline">¶</a></h2>
+<h2>Model Deployment<a class="headerlink" href="#model-deployment" title="Permalink to this heading">¶</a></h2>
 <p>Model serving can also deployed in batch (orchestrated with Prefect), web-service (in a
 docker container), and streaming (with AWS Kinesis and Lambda functions) modes.</p>
 <section id="batch-mode">
-<h3>Batch mode<a class="headerlink" href="#batch-mode" title="Permalink to this headline">¶</a></h3>
+<h3>Batch mode<a class="headerlink" href="#batch-mode" title="Permalink to this heading">¶</a></h3>
 <section id="id11">
-<h4>Quickstart<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h4>
+<h4>Quickstart<a class="headerlink" href="#id11" title="Permalink to this heading">¶</a></h4>
 <p>For orchestrated model batch scoring, you also have the option to set up a cloud storage
 block. If you created a remote storage-block, create the following environment variable:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span><span class="nb">export</span> <span class="nv">PREFECT_SCORE_BATCH_SB</span><span class="o">=</span>&lt;block_type&gt;/&lt;block_name&gt;
@@ -557,7 +563,7 @@ block. If you created a remote storage-block, create the following environment v
 </div>
 </section>
 <section id="id12">
-<h4>The details<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h4>
+<h4>The details<a class="headerlink" href="#id12" title="Permalink to this heading">¶</a></h4>
 <p>Running orchestrated training simply calls <code class="docutils literal notranslate"><span class="pre">orchestrate_batch_score.score_flow()</span></code>, which
 is a copy of <code class="docutils literal notranslate"><span class="pre">score_batch.main()</span></code> with Prefect flow and task decorators. As such, it
 requires the same input parameters.</p>
@@ -570,9 +576,9 @@ manually start a run of model scoring.</p>
 </section>
 </section>
 <section id="web-service">
-<h3>Web service<a class="headerlink" href="#web-service" title="Permalink to this headline">¶</a></h3>
+<h3>Web service<a class="headerlink" href="#web-service" title="Permalink to this heading">¶</a></h3>
 <section id="id13">
-<h4>Quickstart<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h4>
+<h4>Quickstart<a class="headerlink" href="#id13" title="Permalink to this heading">¶</a></h4>
 <p>If you would like to test the web service with your own model (stored in S3 for example),
 you need to create a <cite>.env</cite> file in <cite>src/deployment/web_service/</cite> with the following
 environment variables:</p>
@@ -611,7 +617,7 @@ details).</p>
 </div>
 </section>
 <section id="id14">
-<h4>The details<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h4>
+<h4>The details<a class="headerlink" href="#id14" title="Permalink to this heading">¶</a></h4>
 <p>The web service works by reading in a “packet” of streaming exercise data, performing
 the necessary preprocessing steps of:</p>
 <ol class="arabic simple">
@@ -629,9 +635,9 @@ samples of data, which is the same number used in the original featurization pro
 </section>
 </section>
 <section id="streaming">
-<h3>Streaming<a class="headerlink" href="#streaming" title="Permalink to this headline">¶</a></h3>
+<h3>Streaming<a class="headerlink" href="#streaming" title="Permalink to this heading">¶</a></h3>
 <section id="id15">
-<h4>Quickstart<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h4>
+<h4>Quickstart<a class="headerlink" href="#id15" title="Permalink to this heading">¶</a></h4>
 <p>If you would like to test the containerized streaming service with your own model
 (stored in S3 for example), create a <cite>.env</cite> file in <cite>src/deployment/streaming/</cite> with the
 following environment variables:</p>
@@ -667,14 +673,18 @@ details).</p>
 </div>
 </section>
 <section id="id16">
-<h4>The details<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h4>
+<h4>The details<a class="headerlink" href="#id16" title="Permalink to this heading">¶</a></h4>
 <p>The streaming service works similarly to the web service, except for essentially employing
-AWS Lambda as the “web service” rather than a custom service via Flask.</p>
+AWS Lambda as the “web service” rather than a custom service via Flask. The service runs
+in “test” mode by default (which does not attempt to put records to a predictions stream).
+If you would like to test putting records to a stream you created, make sure the environment
+variables <code class="docutils literal notranslate"><span class="pre">PREDICTIONS_STREAM_NAME</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_ACCESS_KEY_ID</span></code>, <code class="docutils literal notranslate"><span class="pre">AWS_SECRET_ACCESS_KEY</span></code>,
+and <code class="docutils literal notranslate"><span class="pre">AWS_DEFAULT_REGION</span></code> are appropriately defined in your <cite>.env</cite> file.</p>
 </section>
 </section>
 </section>
 <section id="monitoring">
-<h2>Monitoring<a class="headerlink" href="#monitoring" title="Permalink to this headline">¶</a></h2>
+<h2>Monitoring<a class="headerlink" href="#monitoring" title="Permalink to this heading">¶</a></h2>
 <p>Model monitoring is performed on simulated streaming data by taking the data records
 labeled “simulate” in our feature_store, pinging a <cite>prediction</cite> service every 3 seconds
 (i.e., the current feature window size) to generate a model prediction, and finally
@@ -682,9 +692,9 @@ pinging the <cite>evidently</cite> service to monitor performance. It requires a
 <code class="docutils literal notranslate"><span class="pre">docker-compose</span></code> and a run of <code class="docutils literal notranslate"><span class="pre">src.monitor.send_data.py</span></code> to stream the data to the
 <cite>prediction</cite> and <cite>evidently</cite> services.</p>
 <section id="id17">
-<h3><cite>—</cite><a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+<h3><cite>—</cite><a class="headerlink" href="#id17" title="Permalink to this heading">¶</a></h3>
 <section id="id18">
-<h4>Quickstart<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h4>
+<h4>Quickstart<a class="headerlink" href="#id18" title="Permalink to this heading">¶</a></h4>
 <p>To start the <cite>evidently</cite> and <cite>prediction</cite> services, run one of the following to
 build and start the docker containers:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>make docker_monitor
@@ -703,7 +713,7 @@ build and start the docker containers:</p>
 </div>
 </section>
 <section id="id19">
-<h4>The details<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h4>
+<h4>The details<a class="headerlink" href="#id19" title="Permalink to this heading">¶</a></h4>
 <p>The <code class="docutils literal notranslate"><span class="pre">prepare.py</span></code> script loads the simulation data from the database and stores it as
 a separate PARQUET file in <cite>src/monitor</cite> and <cite>src/monitor/evidenctly_service/datasets</cite>.
 There is an example model included in <cite>src/monitor/prediction_service</cite> in case one wants
@@ -727,15 +737,15 @@ your <cite>models</cite> folder.</p>
 </section>
 </section>
 <section id="infrastructure">
-<h2>Infrastructure<a class="headerlink" href="#infrastructure" title="Permalink to this headline">¶</a></h2>
+<h2>Infrastructure<a class="headerlink" href="#infrastructure" title="Permalink to this heading">¶</a></h2>
 <p>I use Terraform to manage cloud- and local resources. <strong>CURRENTLY IN PROGRESS.</strong></p>
 </section>
 <section id="testing">
-<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
+<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this heading">¶</a></h2>
 <section id="id20">
-<h3><cite>—</cite><a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
+<h3><cite>—</cite><a class="headerlink" href="#id20" title="Permalink to this heading">¶</a></h3>
 <section id="id21">
-<h4>Quickstart<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h4>
+<h4>Quickstart<a class="headerlink" href="#id21" title="Permalink to this heading">¶</a></h4>
 <p>To perform the code testing, simply run either:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>make code_tests
 </pre></div>
@@ -747,26 +757,18 @@ your <cite>models</cite> folder.</p>
 </div>
 </section>
 <section id="id22">
-<h4>The details<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h4>
-<p>The tests will likely not pass until the following criteria are met:
-1. The dataset is converted from a MATLAB file to a series of PARQUET files via: <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">data</span></code></p>
-<blockquote>
-<div><p>(this creates the <cite>datafile_group_splits.json</cite> file necessary for validation).</p>
-</div></blockquote>
-<ol class="arabic simple" start="2">
-<li><p>The data is featurized via: <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">features</span></code> (this provides the potentially system-</p></li>
-</ol>
-<blockquote>
-<div><p>specific <code class="docutils literal notranslate"><span class="pre">FEATURIZE_ID</span></code> for the featurization process).</p>
-</div></blockquote>
-<ol class="arabic simple" start="3">
+<h4>The details<a class="headerlink" href="#id22" title="Permalink to this heading">¶</a></h4>
+<p>The tests will likely not pass until the following criteria are met:</p>
+<ol class="arabic simple">
+<li><p>The dataset is converted from a MATLAB file to a series of PARQUET files via: <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">data</span></code> (this creates the <cite>datafile_group_splits.json</cite> file necessary for validation).</p></li>
+<li><p>The data is featurized via: <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">features</span></code> (this provides the potentially system-specific <code class="docutils literal notranslate"><span class="pre">FEATURIZE_ID</span></code> for the featurization process).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">FEATURIZE_ID</span></code> is added as an environment variable in <code class="docutils literal notranslate"><span class="pre">.env</span></code>.</p></li>
 </ol>
 </section>
 </section>
 </section>
 <section id="quality-checks">
-<h2>Quality Checks<a class="headerlink" href="#quality-checks" title="Permalink to this headline">¶</a></h2>
+<h2>Quality Checks<a class="headerlink" href="#quality-checks" title="Permalink to this heading">¶</a></h2>
 <p>Quality checks include:
 - Package import sorting with <code class="docutils literal notranslate"><span class="pre">isort</span></code>
 - Code formatting with <code class="docutils literal notranslate"><span class="pre">black</span></code>
@@ -774,21 +776,56 @@ your <cite>models</cite> folder.</p>
 - Static type checking <code class="docutils literal notranslate"><span class="pre">mypy</span></code>
 - Security checking with <code class="docutils literal notranslate"><span class="pre">bandit</span></code></p>
 <section id="id23">
-<h3><cite>—</cite><a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h3>
+<h3><cite>—</cite><a class="headerlink" href="#id23" title="Permalink to this heading">¶</a></h3>
 <section id="id24">
-<h4>Quickstart<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h4>
+<h4>Quickstart<a class="headerlink" href="#id24" title="Permalink to this heading">¶</a></h4>
 <p>To perform the quality checks, simply run either:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>make quality_checks
 </pre></div>
 </div>
 <p>or</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>isort src
-<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>black src
-<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>pylint src
-<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>mypy src
-<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>bandit -r src
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>isort --line-length<span class="o">=</span><span class="m">88</span> src
+<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>black --line-length<span class="o">=</span><span class="m">88</span> src
+<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>pylint -rn -sn --ignore-paths<span class="o">=</span>tests,integration_tests src
+<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>mypy --no-strict-optional --ignore-missing-imports --exclude <span class="s2">&quot;app.py&quot;</span> --exclude <span class="s2">&quot;^tests/&quot;</span> --exclude <span class="s2">&quot;^integration_tests/&quot;</span> src
+<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>bandit -r -x tests,integration_tests src
 </pre></div>
 </div>
+</section>
+</section>
+</section>
+<section id="publishing">
+<h2>Publishing<a class="headerlink" href="#publishing" title="Permalink to this heading">¶</a></h2>
+<section id="id25">
+<h3><cite>—</cite><a class="headerlink" href="#id25" title="Permalink to this heading">¶</a></h3>
+<section id="id26">
+<h4>Quickstart<a class="headerlink" href="#id26" title="Permalink to this heading">¶</a></h4>
+<p>For publishing the streaming service Docker container image you will first need to create
+an Amazon ECR repository:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>aws ecr create-repository --repository-name &lt;repository_name&gt;
+</pre></div>
+</div>
+<p>Next, set the following environment variables:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span><span class="nb">export</span> <span class="nv">AWS_ACCOUNT_ID</span><span class="o">=</span>&lt;your_account_id&gt;
+<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span><span class="nb">export</span> <span class="nv">AWS_DEFAULT_REGION</span><span class="o">=</span>&lt;your_default_region&gt;
+<span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span><span class="nb">export</span> <span class="nv">REPOSITORY</span><span class="o">=</span>&lt;repository_name&gt;
+</pre></div>
+</div>
+<p>Finally, to actually publish the image, run:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(exercise_prediction)</span> <span class="gp">$ </span>make publish
+</pre></div>
+</div>
+</section>
+<section id="id27">
+<h4>The details<a class="headerlink" href="#id27" title="Permalink to this heading">¶</a></h4>
+<p>Running <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">publish</span></code> automatically the following other commands:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">quality_checks</span></code> to run code quality checks,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">code_tests</span></code> to run unit tests with coverage reports,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">build</span></code> to build the docker image, and</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">integration_tests</span></code> to test the streaming integration with localstack</p></li>
+</ol>
+<p>If any of these previous commands fail, the image will not be pushed to the repository.</p>
 <p>Fin.</p>
 </section>
 </section>
@@ -824,6 +861,7 @@ your <cite>models</cite> folder.</p>
 <li class="toctree-l2"><a class="reference internal" href="#infrastructure">Infrastructure</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#quality-checks">Quality Checks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#publishing">Publishing</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Commands</a></li>
@@ -847,7 +885,7 @@ your <cite>models</cite> folder.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -864,7 +902,7 @@ your <cite>models</cite> folder.</p>
       &copy;.
 
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
 
       |

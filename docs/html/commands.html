@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Commands &#8212; Python  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -33,15 +34,17 @@
           <div class="body" role="main">
 
   <section id="commands">
-<h1>Commands<a class="headerlink" href="#commands" title="Permalink to this headline">¶</a></h1>
+<h1>Commands<a class="headerlink" href="#commands" title="Permalink to this heading">¶</a></h1>
 <p>The Makefile contains the central entry points for common tasks related to this project.</p>
 <section id="syncing-data-to-s3">
-<h2>Syncing data to S3<a class="headerlink" href="#syncing-data-to-s3" title="Permalink to this headline">¶</a></h2>
+<h2>Syncing data to S3<a class="headerlink" href="#syncing-data-to-s3" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><cite>make test_environment</cite> will test the basic python environment is set up correctly</p></li>
 <li><p><cite>make create_environment</cite> will create an empty virtual environment with either <code class="docutils literal notranslate"><span class="pre">conda</span></code>
 or <code class="docutils literal notranslate"><span class="pre">virtualenv</span></code></p></li>
 <li><p><cite>make requirements</cite> will install all python dependencies for the project</p></li>
+<li><p><cite>make setup</cite> to alternatively install dev requirements and create a virtual environment
+with <code class="docutils literal notranslate"><span class="pre">pipenv</span></code></p></li>
 <li><p><cite>make sync_data_to_s3</cite> will use <cite>aws s3 sync</cite> to recursively sync files in <cite>data/</cite> up
 to your specified AWS S3 bucket (requires environment variables <code class="docutils literal notranslate"><span class="pre">S3_BUCKET</span></code> and
 <code class="docutils literal notranslate"><span class="pre">AWS_CONFIG_PATH</span></code>, see <a class="reference internal" href="getting-started.html#installation"><span class="std std-ref">Getting Started: Installation</span></a>).</p></li>
@@ -55,10 +58,19 @@ downloaded [manual process] and in the correct location; see
 deploy an orchestrated model training flow with Prefect, respectively</p></li>
 <li><p><cite>make stand_alone_score_batch</cite> or <cite>make deploy_score_batch</cite> to run stand-alone batch model
 scoring or to deploy an orchestrated bactch scoring flow with Prefect, respectively</p></li>
+<li><p><cite>make deploy_web</cite> to deploy the model as a web service</p></li>
+<li><p><cite>make deploy_streaming</cite> to deploy the model as a streaming service</p></li>
 <li><p><cite>make docker_monitor</cite> to run a simulated streaming monitoring service with Evidently</p></li>
 <li><p><cite>make quality_checks</cite> to run code quality checks with <code class="docutils literal notranslate"><span class="pre">isort</span></code>, <code class="docutils literal notranslate"><span class="pre">black</span></code>, <code class="docutils literal notranslate"><span class="pre">pylint</span></code>,
 <code class="docutils literal notranslate"><span class="pre">mypy</span></code>, and <code class="docutils literal notranslate"><span class="pre">bandit</span></code></p></li>
 <li><p><cite>make code_tests</cite> to run code testing with <code class="docutils literal notranslate"><span class="pre">coverage</span></code> and <code class="docutils literal notranslate"><span class="pre">pytest</span></code></p></li>
+<li><p><cite>make build</cite> to build a Docker container image for the streaming service (will
+automatically call <cite>make quality_checks</cite> and <cite>make code_tests</cite>)</p></li>
+<li><p><cite>make integration_tests</cite> to test the containerized streaming service with localstack
+(will automatically call <cite>make build</cite>)</p></li>
+<li><p><cite>make publish</cite> to publish the containerized streaming service to Amazon ECR (will
+automatically call <cite>make quality_checks</cite>, <cite>make code_tests</cite>, <cite>make build</cite>, and
+<cite>make integration_tests</cite>)</p></li>
 <li><p><cite>make clean</cite> to delete all compiled Python files</p></li>
 </ul>
 </section>
@@ -106,7 +118,7 @@ scoring or to deploy an orchestrated bactch scoring flow with Prefect, respectiv
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -123,7 +135,7 @@ scoring or to deploy an orchestrated bactch scoring flow with Prefect, respectiv
       &copy;.
 
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.1.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
 
       |
