@@ -50,6 +50,11 @@ requirements:
 	python -m pip install -r requirements.txt
 	pre-commit install
 
+## create smaller venvs in folders with a Pipfile (to test minimal requirements)
+setup:
+	pipenv install --dev
+	pre-commit install
+
 ## Make Dataset
 data:
 	python src/data/make_dataset.py \
@@ -73,11 +78,6 @@ stand_alone_train:
 		naive_frequency_features \
 		label_group \
 		src/models/model_search.json
-
-## create smaller venvs in folders with a Pipfile (to test minimal requirements)
-pipenv:
-	pipenv install --dev
-	pre-commit install
 
 ## orchestrate training
 orchestrate_train:
