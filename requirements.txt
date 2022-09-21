@@ -3,6 +3,7 @@
 
 # external requirements
 bandit
+black
 boto3
 click
 coverage

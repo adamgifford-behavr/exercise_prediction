@@ -281,6 +281,11 @@ once finished testing. See ``docker stop --help`` for details.
 The Docker container is run in detached mode, use ``docker stop ...`` to stop the container
 once finished testing. See ``docker stop --help`` for details.
 
+**Publishing**
+
+For information on publishing the streaming service container image, see the detailed
+documentation in `docs`.
+
 **Model Monitoring**
 
 To simulate a streaming monitoring service:

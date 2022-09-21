@@ -13,6 +13,9 @@ TRAIN_SB = ${PREFECT_TRAIN_SB}
 SCORE_BATCH_SB = ${PREFECT_SCORE_BATCH_SB}
 PROJECT_NAME = exercise_prediction
 
+LOCAL_TAG:=$(shell date +"%Y-%m-%d-%H-%M")
+LOCAL_IMAGE_NAME:=stream-exercise-prediction:${LOCAL_TAG}
+
 ifeq (,$(shell which conda))
 HAS_CONDA=False
 else
@@ -103,7 +106,7 @@ endif
 stand_alone_score_batch:
 	python src/models/score_batch.py
 
-## deploy batch scoring
+## deploy batch scoring locally with orchestration
 deploy_score_batch:
 ifeq (,$(TRAIN_SB))
 	@echo ">>> No cloud storage bucket defined. Using local storage"
@@ -126,6 +129,7 @@ else
 	prefect agent start -q 'manual_scoring_flow'
 endif
 
+## deploy web service locally
 deploy_web:
 	cp -R models src/deployment/web_service ; \
 	cd src/deployment/web_service ; \
@@ -139,6 +143,7 @@ deploy_web:
 	sleep 2 ; \
 	python test.py
 
+## deploy streaming container locally
 deploy_streaming:
 	cp -R models src/deployment/streaming ; \
 	cd src/deployment/streaming ; \
@@ -152,7 +157,6 @@ deploy_streaming:
 	sleep 2 ; \
 	python test_docker.py
 
-
 ## simulate streaming monitoring service
 docker_monitor:
 	cp models -r src/monitor/prediction_service ; \
@@ -162,16 +166,28 @@ docker_monitor:
 
 ## code quality checks
 quality_checks:
-	isort src
-	black src
-	pylint src
-	mypy src
-	bandit -r src
+	isort --line-length=88 src
+	black --line-length=88 src
+	pylint -rn -sn --ignore-paths=tests,integration_tests src
+	mypy --no-strict-optional --ignore-missing-imports --exclude "app.py" --exclude "^tests/" --exclude "^integration_tests/" src
+	bandit -r -x tests,integration_tests src
 
 ## code testing
 code_tests:
 	coverage run -m pytest tests/ --disable-warnings
-	coverage report -m
+	coverage html -d htmlcov --show-contexts --skip-empty
+
+## build streaming service image
+build: quality_checks code_tests
+	docker build -t ${LOCAL_IMAGE_NAME} src/deployment/streaming/
+
+## run integration tests for streaming service
+integration_tests: build
+	cd integration_tests ; \
+	LOCAL_IMAGE_NAME=${LOCAL_IMAGE_NAME} bash run.sh
+
+publish: build integration_tests
+	LOCAL_IMAGE_NAME=${LOCAL_IMAGE_NAME} bash scripts/publish.sh
 
 ## Delete all compiled Python files
 clean:
