@@ -47,7 +47,7 @@ frequency_features = load_json("frequency_features.json")
 feature_cols = [
     f"{key}_{int(v_ix)}" for key, val in frequency_features.items() for v_ix in val
 ]
-model_mock = ModelMock("Junk")
+model_mock = ModelMock("Non-exercise")
 model_version = "Test123"
 model_service = model.ModelService(
     model_mock, frequency_features, feature_cols, model_version
@@ -129,7 +129,7 @@ def test_prepare_features():
 def test_predict():
     X = load_json("example_features_sample.json")
     actual_prediction = model_service.predict(X)
-    expected_prediction = "Junk"
+    expected_prediction = "Non-exercise"
 
     assert expected_prediction == actual_prediction
 
@@ -142,7 +142,9 @@ def test_lambda_handler():
         "Records": [
             {
                 "kinesis": {
-                    "data": base64.b64encode(json.dumps(record).encode("utf-8")),
+                    "data": base64.b64encode(json.dumps(record).encode("utf-8")).decode(
+                        "utf-8"
+                    ),
                 },
             }
             for record in decoded_input
@@ -152,8 +154,11 @@ def test_lambda_handler():
 
     prediction_event = {
         "model": "exercise_prediction_naive_feats_orch_cloud",
-        "version": "1",
-        "prediction": {"exercise": "Junk", "id": "512_134_1_0.0_2.9999805304374165"},
+        "version": "Test123",
+        "prediction": {
+            "exercise": "Non-exercise",
+            "id": "512_134_1_0.0_2.9999805304374165",
+        },
     }
 
     diff = DeepDiff(prediction_event, actual_prediction)
