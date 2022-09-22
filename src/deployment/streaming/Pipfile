@@ -13,6 +13,7 @@ mypy-boto3-kinesis = "*"
 [dev-packages]
 requests = "*"
 pyarrow = "*"
+deepdiff = "*"
 
 [requires]
 python_version = "3.10"
