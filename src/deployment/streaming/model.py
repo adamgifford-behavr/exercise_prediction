@@ -13,7 +13,6 @@ from typing import Optional, Union
 import boto3
 import mlflow
 import numpy as np
-from aws_lambda_typing import events
 from mypy_boto3_kinesis import KinesisClient
 from sklearn.base import ClassifierMixin
 
@@ -332,7 +331,7 @@ class ModelService:
         prediction = self.model.predict(X)
         return str(prediction[0])
 
-    def lambda_handler(self, event: events.SQSEvent) -> dict:
+    def lambda_handler(self, event: dict) -> dict:
         """
         It takes in a dictionary of records coming from an Amazon Kinesis stream, with
         each record containing a data field of encoded data representing accerlerometer,
@@ -340,7 +339,7 @@ class ModelService:
         of the exercise being performed
 
         Args:
-        event (events.SQSEvent): the event of records that triggered the lambda function
+        event (dict): the event of records that triggered the lambda function
 
         Returns:
         The prediction event is being returned.
@@ -357,7 +356,7 @@ class ModelService:
 
         prediction_event = {
             "model": "exercise_prediction_naive_feats_orch_cloud",
-            "version": "1",
+            "version": self.model_version,
             "prediction": {"exercise": prediction, "id": id_},
         }
 

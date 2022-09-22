@@ -350,7 +350,7 @@ def _make_train_test_sim_split(
 
 def write_single_parquet_file_wrapper(
     interim_path: Union[str, Path],
-    subj_data: np.ndarray,
+    subj_data: sio.matlab.mat_struct,
     data_id: int = 0,
     overwrite: bool = False,
 ):
@@ -360,7 +360,7 @@ def write_single_parquet_file_wrapper(
 
     Args:
       interim_path (str): full interim file path to save the parquet file
-      subj_data (np.ndarray): array of subject data
+      subj_data (sio.matlab.mat_struct): array of subject data
       data_id (int): int = 0,. Defaults to 0
       overwrite (bool): bool = False,. Defaults to False
     """
@@ -413,13 +413,18 @@ def multi_convert_mat_to_parquet(
             write_single_parquet_file_wrapper(interim_path, subj_data, 0, overwrite)
 
 
-def _get_desired_multifile_params(**kwargs):
-    # get desired number of subjects to include in validation set that have 5, 4, 3, and
-    # 2 data-recording files, respectively using values passed in kwargs combined with
-    # defaults
-    # will fill in any additional subjects to meet desired subject and file count with
-    # those subjects that have only one recording file, so we don't include this
-    # criterion here
+def _get_desired_multifile_params(**kwargs) -> dict:
+    """
+    Gets desired number of subjects to include in validation set that have 5, 4, 3, and
+    2 data-recording files, respectively using values passed in kwargs combined with
+    defaults. Will fill in any additional subjects to meet desired subject and file count
+    with those subjects that have only one recording file, so we don't include this
+    criterion here
+
+    Returns:
+      A dictionary with the keys: n_5_files, n_4_files, n_3_files, n_2_files. The values
+      are the number of files that should be used for validation for each of the keys.
+    """
     default_ns = {"n_5_files": 0, "n_4_files": 1, "n_3_files": 1, "n_2_files": 1}
     desired_multifile_counts = {
         key: val if key not in kwargs else kwargs[key]

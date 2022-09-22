@@ -12,12 +12,11 @@ import boto3
 import mlflow
 import numpy as np
 from aws_lambda_typing import context as context_
-from aws_lambda_typing import events
 
 kinesis_client = boto3.client("kinesis")
 
 TEST_RUN = os.getenv("TEST_RUN", "False") == "True"
-PREDICTIONS_STREAM_NAME = os.getenv("PREDICTIONS_STREAM_NAME")
+PREDICTIONS_STREAM_NAME = os.getenv("PREDICTIONS_STREAM_NAME", "predictions_stream")
 
 with open("frequency_features.json", "r", encoding="utf-8") as infile:
     DESIRED_FREQS = json.load(infile)
@@ -195,7 +194,7 @@ def predict(X: list[dict]) -> str:
 
 
 def lambda_handler(
-    event: events.SQSEvent, context: context_.Context  # pylint: disable=unused-argument
+    event: dict, context: context_.Context  # pylint: disable=unused-argument
 ) -> dict:
     """
     It takes in a dictionary of records coming from an Amazon Kinesis stream, with each
@@ -204,7 +203,7 @@ def lambda_handler(
     being performed
 
     Args:
-      event (events.SQSEvent): the event of records that triggered the lambda function
+      event (dict): the event of records that triggered the lambda function
       context (context_.Context): The AWS Lambda runtime passes this object to the handler.
       You can use it to access runtime methods, such as logging.
 

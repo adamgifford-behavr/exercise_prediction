@@ -234,7 +234,7 @@ def model_search(
     search_space: Dict[str, Any],
     x_data: List[pd.DataFrame],
     y_data: List[pd.core.series.Series],
-    rstate: Optional[Union[int, float]] = None,
+    rstate: Optional[int] = None,
     initial_points: Optional[List[Dict[str, Any]]] = None,
 ) -> Tuple[Dict[str, Any], str]:
     # pylint: disable=too-many-locals
@@ -254,6 +254,7 @@ def model_search(
       validation, in the form of (X_train, X_val)
       y_data (List[pd.core.series.Series]): label data for training
       and validation, in the form of (y_train, y_val)
+      rstate (Optional[int]): optional random state for hyperopt.fmin(). Defaults to None
       initial_points (Optional[List[Dict[str, Any]]]): dictionary of initial points to
       use as start of hyperparameter search. defaults to None
 

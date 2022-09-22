@@ -29,9 +29,9 @@ sb.DATABASE_URI = DATABASE_URI
 sb.MLFLOW_TRACKING_SERVER = os.getenv("MLFLOW_TRACKING_SERVER", "localhost:5000")
 sb.FEATURIZE_ID = os.getenv("FEATURIZE_ID")
 
-load_data = task(sb.load_data, name="Load batch data")
-apply_model = task(sb.apply_model, name="Apply model")
-write_predictions_to_db = task(
+load_data = task(sb.load_data, name="Load batch data")  # type: ignore
+apply_model = task(sb.apply_model, name="Apply model")  # type: ignore
+write_predictions_to_db = task(  # type: ignore
     sb.write_predictions_to_db, name="Write predictions to database"
 )
 

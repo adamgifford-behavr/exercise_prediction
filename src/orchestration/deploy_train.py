@@ -36,4 +36,4 @@ deployment = Deployment.build_from_flow(
     # storage=storage,
     work_queue_name="manual_training_flow",
 )
-deployment.apply()
+deployment.apply()  # type: ignore

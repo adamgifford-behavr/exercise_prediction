@@ -35,14 +35,18 @@ mlflow.set_experiment(tm.EXP_NAME)
 tm.CLIENT = MlflowClient(f"http://{tm.MLFLOW_TRACKING_SERVER}")
 tm.EXP_ID = dict(mlflow.get_experiment_by_name(tm.EXP_NAME))["experiment_id"]
 
-load_data = task(tm.load_data, name="Data Loading")
-process_columns = task(tm.process_columns, name="Preprocessing")
-model_search = task(tm.model_search, name="Model Hyperparameter Search with hyperopt")
-train_log_best_model = task(tm.train_log_best_model, name="Train and Log Best Model")
-test_log_best_model = task(
+load_data = task(tm.load_data, name="Data Loading")  # type: ignore
+process_columns = task(tm.process_columns, name="Preprocessing")  # type: ignore
+model_search = task(  # type: ignore
+    tm.model_search, name="Model Hyperparameter Search with hyperopt"
+)
+train_log_best_model = task(  # type: ignore
+    tm.train_log_best_model, name="Train and Log Best Model"
+)
+test_log_best_model = task(  # type: ignore
     tm.test_log_best_model, name="Test and Log Best-Model Accuracy"
 )
-compare_with_registered_models = task(
+compare_with_registered_models = task(  # type: ignore
     tm.compare_with_registered_models, name="Compare with Registered Models"
 )
 

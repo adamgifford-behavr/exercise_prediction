@@ -10,7 +10,7 @@ import model
 from aws_lambda_typing import context as context_
 from aws_lambda_typing import events
 
-PREDICTIONS_STREAM_NAME = os.getenv("PREDICTIONS_STREAM_NAME", "predictions-stream")
+PREDICTIONS_STREAM_NAME = os.getenv("PREDICTIONS_STREAM_NAME", "predictions_stream")
 RUN_ID = os.getenv("RUN_ID")
 TEST_RUN = os.getenv("TEST_RUN", "True") == "True"
 
