@@ -37,9 +37,9 @@ repos:
             --exclude,
             "app.py",
             --exclude,
-            "^tests/",
+            "^tests/*",
             --exclude,
-            "^integration_tests/",
+            "^integration_tests/*",
           ]
   - repo: local
     hooks:
