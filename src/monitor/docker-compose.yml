@@ -21,7 +21,7 @@ services:
     environment:
       EVIDENTLY_SERVICE: "http://evidently_service.:8085"
       MONGODB_ADDRESS: "mongodb://mongo.:27017/"
-      MODEL_LOCATION:
+      # MODEL_LOCATION: "s3://agifford-mlflow-artifacts-remote/4/85412c4643564a4f8a6b3d8f0130216a/artifacts/models/"
       AWS_ACCESS_KEY_ID:
       AWS_SECRET_ACCESS_KEY:
       AWS_DEFAULT_REGION:
