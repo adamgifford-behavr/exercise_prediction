@@ -2,7 +2,7 @@
 terraform {
   required_version = ">= 1.0"
   backend "s3" {
-    bucket  = "agifford-exercise-prediction-terraform" # bucket name
+    bucket  = "tf-states-agifford" # bucket name
     key     = "exercise-prediction-stg.tfstate"
     region  = "us-east-1"
     encrypt = true
