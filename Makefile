@@ -55,6 +55,28 @@ setup:
 	pipenv install --dev
 	pre-commit install
 
+## create staging infrastructure resources in AWS with Terraform
+create_stage_infra:
+	cd infrastructure ; \
+	terraform init ; \
+	terraform apply -var-file=vars/stg.tfvars
+
+## create production infrastructure resources in AWS with Terraform
+create_prod_infra:
+	cd infrastructure ; \
+	terraform init ; \
+	terraform apply -var-file=vars/prod.tfvars
+
+## destroy staging infrastructure resources in AWS with Terraform
+destroy_stage_infra:
+	cd infrastructure ; \
+	terraform destroy -var-file=vars/stg.tfvars
+
+## destroy production infrastructure resources in AWS with Terraform
+destroy_prod_infra:
+	cd infrastructure ; \
+	terraform destroy -var-file=vars/prod.tfvars
+
 ## Make Dataset
 data:
 	python src/data/make_dataset.py \
@@ -87,7 +109,7 @@ ifeq (,$(TRAIN_SB))
 	prefect deployment build \
 		orchestrate_train.py:train_flow \
 		-n 'Main Model-Training Flow' \
-		-q 'manual_training_flow'
+		-q 'manual_training_flow' ; \
 	prefect deployment apply train_flow-deployment.yaml ; \
 	prefect agent start -q 'manual_training_flow'
 else
@@ -173,12 +195,12 @@ quality_checks:
 	bandit -r -x tests,integration_tests src
 
 ## code testing
-code_tests:
+code_tests: quality_checks
 	coverage run -m pytest tests/ --disable-warnings
 	coverage html -d htmlcov --show-contexts --skip-empty
 
 ## build streaming service image
-build: quality_checks code_tests
+build: code_tests
 	docker build -t ${LOCAL_IMAGE_NAME} src/deployment/streaming/
 
 ## run integration tests for streaming service
@@ -186,7 +208,7 @@ integration_tests: build
 	cd integration_tests ; \
 	LOCAL_IMAGE_NAME=${LOCAL_IMAGE_NAME} bash run.sh
 
-publish: build integration_tests
+publish: integration_tests
 	LOCAL_IMAGE_NAME=${LOCAL_IMAGE_NAME} bash scripts/publish.sh
 
 ## Delete all compiled Python files
