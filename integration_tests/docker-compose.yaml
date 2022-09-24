@@ -6,7 +6,7 @@ services:
     environment:
       - PREDICTIONS_STREAM_NAME=${PREDICTIONS_STREAM_NAME}
       - TEST_RUN=False
-      - RUN_ID=68bca43a7210449e89aa5ef9280c7fab
+      - RUN_ID=85412c4643564a4f8a6b3d8f0130216a
       - AWS_DEFAULT_REGION=us-east-1
       - MODEL_LOCATION=models/
       - KINESIS_ENDPOINT_URL=http://kinesis:4566/
