@@ -45,6 +45,10 @@ or <code class="docutils literal notranslate"><span class="pre">virtualenv</span
 <li><p><cite>make requirements</cite> will install all python dependencies for the project</p></li>
 <li><p><cite>make setup</cite> to alternatively install dev requirements and create a virtual environment
 with <code class="docutils literal notranslate"><span class="pre">pipenv</span></code></p></li>
+<li><p><cite>create_stage_infra</cite> to create staging infrastructure resourse with Terraform</p></li>
+<li><p><cite>create_prod_infra</cite> to create production infrastructure resourse with Terraform</p></li>
+<li><p><cite>destroy_stage_infra</cite> to destroy staging infrastructure resourse with Terraform</p></li>
+<li><p><cite>destroy_prod_infra</cite> to destroy production infrastructure resourse with Terraform</p></li>
 <li><p><cite>make sync_data_to_s3</cite> will use <cite>aws s3 sync</cite> to recursively sync files in <cite>data/</cite> up
 to your specified AWS S3 bucket (requires environment variables <code class="docutils literal notranslate"><span class="pre">S3_BUCKET</span></code> and
 <code class="docutils literal notranslate"><span class="pre">AWS_CONFIG_PATH</span></code>, see <a class="reference internal" href="getting-started.html#installation"><span class="std std-ref">Getting Started: Installation</span></a>).</p></li>

@@ -12,14 +12,18 @@ Syncing data to S3
 * `make requirements` will install all python dependencies for the project
 * `make setup` to alternatively install dev requirements and create a virtual environment
   with ``pipenv``
+* `create_stage_infra` to create staging infrastructure resourse with Terraform
+* `create_prod_infra` to create production infrastructure resourse with Terraform
+* `destroy_stage_infra` to destroy staging infrastructure resourse with Terraform
+* `destroy_prod_infra` to destroy production infrastructure resourse with Terraform
 * `make sync_data_to_s3` will use `aws s3 sync` to recursively sync files in `data/` up
   to your specified AWS S3 bucket (requires environment variables ``S3_BUCKET`` and
-  ``AWS_CONFIG_PATH``, see :ref:`Getting Started: Installation <getting-started:installation>`).
+  ``AWS_CONFIG_PATH``, see :ref:`Getting Started: Installation <installation>`).
 * `make sync_data_from_s3` will use `aws s3 sync` to recursively sync files from your
   specified AWS S3 bucket to `data/`.
 * `make data` will prepare the dataset for featurization (requires that dataset is already
   downloaded [manual process] and in the correct location; see
-  :ref:`Getting Started: Installation <getting-started:installation>`)
+  :ref:`Getting Started: Installation <installation>`)
 * `make features` will build the features for model training
 * `make stand_alone_train` or `make deploy_train` to run stand-alone model training or to
   deploy an orchestrated model training flow with Prefect, respectively

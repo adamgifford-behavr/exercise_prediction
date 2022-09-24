@@ -32,7 +32,7 @@ Installation
 `here <https://msropendata.com/datasets/799c1167-2c8f-44c4-929c-227bf04e2b9a>`_
 (you will need to login or create an account and agree to the terms of use in
 order to download the data, but it is free). Place the contents in the
-`data/raw/` directory.
+*data/raw/* directory.
 
 3. Create a virtual environment for the entire project using your favorite method. For example,
 using make:
@@ -55,15 +55,15 @@ where ``env_name`` is whatever name you want to provide for the environment. If 
 
 .. code-block:: console
 
-    (<env_name>) $ make requirements
+    (env_name) $ make requirements
 
 or, using pip:
 
 .. code-block:: console
 
-    (<env_name>) $ python -m pip install -U pip setuptools wheel
-	(<env_name>) $ python -m pip install -r requirements.txt
-	(<env_name>) $ pre-commit install
+    (env_name) $ python -m pip install -U pip setuptools wheel
+    (env_name) $ python -m pip install -r requirements.txt
+    (env_name) $ pre-commit install
 
 where ``env_name`` is whatever name you want to provide for the environment. If using
 ``make``, ``env_name`` defaults to "exercise_prediction".
@@ -100,6 +100,34 @@ database in .env:
 Optional
 ~~~~~~~~
 
+Setting up ``asw-cli``
+^^^^^^^^^^^^^^^^^^^^^^
+
+To set up the ``aws-cli``, follow these instructions:
+
+1. See instructions on setting up the ``aws-cli`` `here`_.
+
+.. _a link: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-prereqs.html
+
+2. Configure ``aws-cli``
+
+.. code-block:: console
+
+    $ aws configure
+    AWS Access Key ID [None]: xxx
+    AWS Secret Access Key [None]: xxx
+    Default region name [None]: xxx
+    Default output format [None]:
+
+3. Verify aws config
+
+.. code-block:: console
+
+    $ aws sts get-caller-identity
+
+Syncing data to S3
+^^^^^^^^^^^^^^^^^^
+
 If you would like to be able to sync your data to an S3 bucket, you will need to also set
 the following environment variables:
 
@@ -108,9 +136,105 @@ the following environment variables:
     (exercise_prediction) $ export S3_BUCKET=<s3_bucket_name/>
     (exercise_prediction) $ export AWS_PROFILE=<name_of_config_profile>
 
-where ``name_of_config_profile`` is the name of your AWS profile in "~/.aws/config" (
-typically `default` by default).
+where ``name_of_config_profile`` is the name of your AWS profile in *~/.aws/config* (
+typically *default* by default).
 
+.. _Infrastructure:
+
+Cloud resource management with Terraform
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To set up the AWS infrastructure to serve the streaming prediction service, you first
+will need to make some changes to the main Terraform file:
+
+.. code-block:: terraform
+    :caption: *infrastructure/main.tf*
+
+    terraform {
+    required_version = ">= 1.0"
+    backend "s3" {
+        bucket  = XXX # pre-existing bucket name goes here
+        key     = "exercise-prediction-stg.tfstate"
+        region  = YYY # your default AWS region
+        encrypt = true
+    }
+    required_providers {
+        aws = {
+        source  = "hashicorp/aws"
+        version = "~> 4.0"
+        }
+    }
+    }
+
+where ``XXX`` and ``YYY`` should be replaced with your existing S3 bucket and default
+region, respectively.
+
+Additionally, you should create the following files:
+
+.. code-block:: terraform
+    :caption: *infrastructure/vars/stg.tfvars*
+
+    source_stream_name         = "stg_signals_stream"
+    output_stream_name         = "stg_predictions_stream"
+    model_bucket               = AAA # the desired staging model bucket goes here
+    lambda_function_local_path = "../src/deployment/streaming/lambda_function.py"
+    docker_image_local_path    = "../src/deployment/streaming/Dockerfile"
+    ecr_repo_name              = BBB # the desired staging ECR repo goes here
+    lambda_function_name       = CCC # the desired staging lambda function goes here
+
+where ``AAA``, ``BBB``, and ``CCC`` are the names of the S3 bucket where your model is
+located, the repository to store your docker contianer, and the name of your lambda
+function, respectively (and ideally, each name should start with *stg_* to signify these
+are resources in the staging environment).
+
+.. code-block:: terraform
+    :caption: *infrastructure/vars/prod.tfvars*
+
+    source_stream_name         = "prod_signals_stream"
+    output_stream_name         = "prod_predictions_stream"
+    model_bucket               = DDD # the desired production model bucket goes here
+    lambda_function_local_path = "../src/deployment/streaming/lambda_function.py"
+    docker_image_local_path    = "../src/deployment/streaming/Dockerfile"
+    ecr_repo_name              = EEE # the desired production ECR repo goes here
+    lambda_function_name       = FFF # the desired production lambda function goes here
+
+where ``DDD``, ``EEE``, and ``FFF`` are the names of the S3 bucket where your model is
+located, the repository to store your docker contianer, and the name of your lambda
+function, respectively (and ideally, each name should start with *prod_* to signify these
+are resources in the production environment).
+
+Once these steps are completed, you can use either ``make`` or the console to create the
+resources. With ``make``, use:
+
+.. code-block:: console
+
+    $ make create_stage_infra
+
+to create resources for the staging environment or use:
+
+.. code-block:: console
+
+    $ make create_prod_infra
+
+to create resources for the production environment.
+
+Alternatively, you can perform the same functions using console commands:
+
+.. code-block:: console
+
+    $ cd infrastructure
+    $ terraform init
+    $ terraform apply -var-file=vars/<environment_file>
+
+where ``environment_file`` is either *stg.tfvars* or *prod.tfvars* depending on if you
+are setting up a staging or production environment.
+
+.. note::
+
+    The infrastructure setup creates resources (such as Amazon Kinesis) that can be costly.
+    To avoid excessive usage costs, make sure to delete these resourses as soon as you
+    are finished with them. The commands ``make destroy_stage_infra`` and
+    ``make destroy_prod_infra`` are the easiest ways to do this.
 
 Data Processing
 ---------------
@@ -146,8 +270,8 @@ The details
 ^^^^^^^^^^^
 
 If you would like more reference on how the raw MATLAB files are structured, see
-``notebooks/0-setup/0.1-agifford-TestLoadMatFileAndVerify.ipynb``. Running ``make_dataset.py``
-also produces the file `src/features/datafile_group_splits.json`, which splits each
+*notebooks/0-setup/0.1-agifford-TestLoadMatFileAndVerify.ipynb*. Running *make_dataset.py*
+also produces the file *src/features/datafile_group_splits.json*, which splits each
 PARQUET files into one of 4 groups:
 
 - "train": for model training;
@@ -155,7 +279,7 @@ PARQUET files into one of 4 groups:
 - "test": for model testing and comparing among different model flavors;
 - "simulate": for simulating "real-world" web-service, streaming and batch model serving.
 
-This file is a necessary input for `src/features/build_features.py`.
+This file is a necessary input for *src/features/build_features.py*.
 
 Building the features
 ~~~~~~~~~~~~~~~~~~~~~
@@ -193,20 +317,20 @@ The details
 The logic of the analysis is as follows:
 
 - for each file, signals are binned into 3-second windows (see
-  ``notebooks/1-agifford-TestLoadMatFileAndVerify/1.4-agifford-DetermineAnalysisWindowSize.ipynb``
+  *notebooks/1-agifford-TestLoadMatFileAndVerify/1.4-agifford-DetermineAnalysisWindowSize.ipynb*
   for a detailed run-through on the 3-second window rationale)
 - in each window, we compute a Fourier transform of the signal after applying a
   Hanning window
 - for each signal (e.g., "accel_x", "accel_y", "gyro_z", etc.), we extract the
   magnitude of a select few frequecnies (see
-  ``notebooks/1-exploratory/1.3-agifford-FindFrequencyPeaksTraining.ipynb`` for a detailed
+  *notebooks/1-exploratory/1.3-agifford-FindFrequencyPeaksTraining.ipynb* for a detailed
   run-through of my process for determining the particular frequencies of interest and the
-  code for storing the data for use in ``build_features.py``)
+  code for storing the data for use in *build_features.py* )
 - these frequency features by raw signal are stored in the file
-  `src/features/frequency_feature.json`, which is another necessary input to
-  `src/features/build_features.py`.
+  *src/features/frequency_feature.json*, which is another necessary input to
+  *src/features/build_features.py*.
 
-The final necessary input to ``build_features.py`` is `src/features/metaparams.json`, which
+The final necessary input to *build_features.py* is *src/features/metaparams.json*, which
 provides details about the process employed to generate the features. This file is manually
 created and already provided in the package. Currently, the file looks as follows:
 
@@ -222,7 +346,7 @@ created and already provided in the package. Currently, the file looks as follow
       "window": "hanning"
     }
 
-Only `n_fft` is actually used as a parameter in the function (and as such controls the
+Only ``n_fft`` is actually used as a parameter in the function (and as such controls the
 size of the window in which to analyze the data). The other parameters are used to generate
 a unique "featurization_id" for the feature_store database to identify when an identical
 run of the featurization process is conducted to decide whether to skip re-running an
@@ -257,7 +381,7 @@ To perform model training, first you need to start the MLflow server:
         --default-artifact-root ROOT_DIRECTORY
 
 where ``ROOT_DIRECTORY`` is the directory your artifacts will be stored (generally
-`mlruns` or a remote storage container like S3). The arguments ``-h 0.0.0.0 -p 5000``
+*mlruns* or a remote storage container like S3). The arguments ``-h 0.0.0.0 -p 5000``
 are optional for if you are deploying the tracking server to the cloud.
 
 .. note::
@@ -265,7 +389,7 @@ are optional for if you are deploying the tracking server to the cloud.
     The mlflow server command does not import environment variables ``MLFLOW_DB_PW`` and
     ``MLFLOW_DB_URI``, so these will need to be written out in the command above.
 
-You also may need to define the following environment variables in ``.env``:
+You also may need to define the following environment variables in *.env*:
 
 .. code-block:: text
 
@@ -299,12 +423,12 @@ or
 .. note::
 
     If you are running a local server, make sure your artifact ``ROOT_DIRECTORY``
-    is at the same level as you are where you run model training (i.e., "exercise_prediction"
-    for ``make`` or "exercise_prediction/src/models" for ``python``). Alternatively, if running
-    ``train_model.py`` from the parent directory, you'll have to include the relative paths
+    is at the same level as you are where you run model training (i.e., *exercise_prediction*
+    for ``make`` or *exercise_prediction/src/models* for ``python``). Alternatively, if running
+    *train_model.py* from the parent directory, you'll have to include the relative paths
     of the necessary json inputs (see below).
 
-Model training with ``train_model.py`` requires 3 inputs, and an optional 4th:
+Model training with *train_model.py* requires 3 inputs, and an optional 4th:
 
 .. py:function:: src.models.train_model
 
@@ -327,7 +451,7 @@ Model training with ``train_model.py`` requires 3 inputs, and an optional 4th:
 The details
 ^^^^^^^^^^^
 
-The file identified by ``model_search_json`` contains the following information:
+The file identified by *model_search_json* contains the following information:
 
 .. code-block:: json
 
@@ -370,12 +494,12 @@ The file identified by ``model_search_json`` contains the following information:
 - The "fmin_rstate" is the random state for ``hyperopt.fin`` (for reproducibility).
 - Next, there is the "search_parameters" input, which is a list of input hyperparameter
   names to the classifier that will be fit with ``hyperopt``. The global variable
-  ``ALL_SEARCH_PARAMS`` in ``train_model.py`` defines the search spaces for all potential
+  ``ALL_SEARCH_PARAMS`` in *train_model.py* defines the search spaces for all potential
   hyperparameters of interest across the 3 classifier flavors.
 - Finally, there is the "fixed_paramaters" input, which is itself a dictionary of
   inputs to the classifier that are to remain fixed throughout the hyperparameter tuning.
 - There is also a parameter "unsearched_parameters", which is a list of other potential
-  hyperparameters that `could` be fit for the classifier, but are not. This field is simply
+  hyperparameters that **could** be fit for the classifier, but are not. This field is simply
   ignored during training.
 
 .. note::
@@ -383,7 +507,7 @@ The file identified by ``model_search_json`` contains the following information:
     If you want to convert any "fixed_paramaters" to "search_parameters", you must
     add them to ``ALL_SEARCH_PARAMS`` with a defined ``hyperopt`` search space. Similarly,
     if you want to test a different classifier, the classifier needs to be imported in
-    ``train_model.py``, it must be added to the dictionary ``classifiers`` in
+    *train_model.py*, it must be added to the dictionary ``classifiers`` in
     ``train_model._get_named_classifier()``, and any additional search parameters must be
     added to ``ALL_SEARCH_PARAMS`` with defined ``hyperopt`` search spaces.
 
@@ -501,11 +625,11 @@ Stand-Alone Model Serving
 
 Model Serving can be performed in stand-alone mode with batch scoring. The end result is
 to test the "Production" model on simulated new data that was preprocessed by
-``build_features.py``.
+*build_features.py*.
 
 We simulate scoring the model on new (unseen) data in batch mode by loading in data with
 the "simulate" ``dataset_group`` from our features table (which was processed in
-``build_features.py``). After scoring, we save the predictions and true labels, along
+*build_features.py*). After scoring, we save the predictions and true labels, along
 with a link to each row of data in our features table, to a predictions table in our
 ``feature_store`` database for further analysis.
 
@@ -513,7 +637,7 @@ with a link to each row of data in our features table, to a predictions table in
 
     Model scoring with default parameter settings requires a model in "Production" stage.
     Transitioning a model to "Production" is simulated as a manual step in this project,
-    thus you will have to manually promote the best model from ``build_features.py``
+    thus you will have to manually promote the best model from *build_features.py*
     in the MLflow model registry from "Staging" to "Production".
 
 `---`
@@ -537,7 +661,7 @@ or
 The details
 ^^^^^^^^^^^
 
-``score_batch.py`` requires the following inputs:
+*score_batch.py* requires the following inputs:
 
 .. py:function:: src.models.batch_score()
 
@@ -570,12 +694,12 @@ doesn't exist in the database, the code can create it.
     ``prediction_table`` from the database, you will also need to delete the ``Sequence``
     generator used to auto-increment the table's primary key (otherwise you will get an
     error trying to recreate a ``Sequence`` that already exists). You can do this in
-    pgAdmin by right-clicking `Databases > feature_store > Schemas > public > Sequences >
-    naive_frequency_features_predictions_naive_frequency_features_p...` and selecting
+    pgAdmin by right-clicking *Databases > feature_store > Schemas > public > Sequences >
+    naive_frequency_features_predictions_naive_frequency_features_p...* and selecting
     "Delete/Drop".
 
-Model Deployment
-----------------
+Model Serving
+-------------
 
 Model serving can also deployed in batch (orchestrated with Prefect), web-service (in a
 docker container), and streaming (with AWS Kinesis and Lambda functions) modes.
@@ -632,7 +756,7 @@ Quickstart
 ^^^^^^^^^^
 
 If you would like to test the web service with your own model (stored in S3 for example),
-you need to create a `.env` file in `src/deployment/web_service/` with the following
+you need to create a *.env* file in *src/deployment/web_service/* with the following
 environment variables:
 
 .. code-block:: text
@@ -643,7 +767,7 @@ environment variables:
     AWS_DEFAULT_REGION=XXXX
 
 where ``MODEL_LOCATION`` looks something like:
-`s3://<YOUR_BUCKET>/<EXP_ID>/<RUN_ID>/artifacts/models/`.
+*s3://<YOUR_BUCKET>/<EXP_ID>/<RUN_ID>/artifacts/models/*.
 
 For use as a web service, simply run one of the following commands:
 
@@ -661,8 +785,8 @@ or
 	(exercise_prediction) $ docker run -itd --rm -p 9696:9696 exercise-prediction-webservice:v1
 	(exercise_prediction) $ python test.py
 
-The ``make`` command will automatically run the container with the `.env` file if it
-exists. Otherwise it will run the container with the pretrained model in `models/`.
+The ``make`` command will automatically run the container with the *.env* file if it
+exists. Otherwise it will run the container with the pretrained model in *models/*.
 However, if you want to start the service step by step from the console, replace the
 ``docker run`` command above with the following:
 
@@ -690,8 +814,8 @@ the necessary preprocessing steps of:
 
 The data "packets" sent to the prediction service correspond to windows of streaming data
 that contain contiguous samples of recordings in order to perform the necessary
-featurizations. The ``predict.py`` app is designed to accept any duration of data (in
-theory), but for example purposes the data sent in ``test.py`` contains 151 contiguous
+featurizations. The *predict.py* app is designed to accept any duration of data (in
+theory), but for example purposes the data sent in *test.py* contains 151 contiguous
 samples of data, which is the same number used in the original featurization process.
 
 Streaming
@@ -700,7 +824,7 @@ Streaming
 Quickstart
 ^^^^^^^^^^
 If you would like to test the containerized streaming service with your own model
-(stored in S3 for example), create a `.env` file in `src/deployment/streaming/` with the
+(stored in S3 for example), create a *.env* file in *src/deployment/streaming/* with the
 following environment variables:
 
 .. code-block:: text
@@ -725,10 +849,10 @@ or
 	(exercise_prediction) $ docker run -itd --rm -p 8080:8080 exercise-prediction-streaming:v1
 	(exercise_prediction) $ python test_docker.py
 
-The ``make`` command will automatically run the container with the `.env` file if it
-exists. Otherwise it will run the container with the pretrained model in `models/`.
+The ``make`` command will automatically run the container with the *.env* file if it
+exists. Otherwise it will run the container with the pretrained model in *models/*.
 However, if you want to start the service step by step from the console and use your own
-.env` file, replace the ``docker run`` command above with the following:
+*.env* file, replace the ``docker run`` command above with the following:
 
 .. code-block:: console
 
@@ -748,17 +872,108 @@ AWS Lambda as the "web service" rather than a custom service via Flask. The serv
 in "test" mode by default (which does not attempt to put records to a predictions stream).
 If you would like to test putting records to a stream you created, make sure the environment
 variables ``PREDICTIONS_STREAM_NAME``, ``AWS_ACCESS_KEY_ID``, ``AWS_SECRET_ACCESS_KEY``,
-and ``AWS_DEFAULT_REGION`` are appropriately defined in your `.env` file.
+and ``AWS_DEFAULT_REGION`` are appropriately defined in your *.env* file.
+
+Deployment
+----------
+
+Publishing to ECR
+~~~~~~~~~~~~~~~~~
+
+The containerized streaming service can be published to Amazon ECR.
+
+Quickstart
+^^^^^^^^^^
+
+To publish the streaming service to the container registry, you must first set the
+following environment variables:
+
+.. code:: console
+
+    $ export AWS_ACCOUNT_ID=XXX
+    $ export AWS_DEFAULT_REGION=YYY
+    $ export REPOSITORY=ZZZ
+
+where ``XXX``, ``YYY``, and ``ZZZ`` are your acount id number, your AWS region, and the
+name of your repository in ECR where you want to publish the container.
+
+Next, simply run:
+
+.. code:: console
+
+    $ make publish
+
+The details
+^^^^^^^^^^^
+
+The publish command depends on a series of other steps before the container is actually
+published to ECR:
+
+1. ``make quality_checks`` performs code quality checks (e.g., linting and typing)
+2. ``make code_tests`` performs unit tests on the codebase
+3. ``make build`` builds the container
+4. ``make integration_tests`` performs integration tests for the container using localstack
+
+After those steps are completed successfully, ``make publish`` calls *scripts/publish.sh*
+to publish the container. See `Testing`_ below for details on the testing structure.
+
+Manual deployment
+~~~~~~~~~~~~~~~~~
+
+Quickstart
+^^^^^^^^^^
+
+The streaming service is also set up for manual deployment to the staging environment
+created by Terraform. First, you will need to edit the following variables in
+*scripts/deploy_manual.sh*:
+
+.. code-block:: bash
+
+    AWS_REGION=xxx
+
+    # Dynamically generated by TF
+    export MODEL_BUCKET_PROD=xxx
+    export PREDICTIONS_STREAM_NAME=xxx
+    export LAMBDA_FUNCTION=xxx
+
+    # Model artifacts bucket from your stand-alone runs of modeling
+    export MODEL_BUCKET_DEV=xxx
+
+    # Get latest RUN_ID from latest S3 partition.
+    # NOT FOR PRODUCTION!
+    # In practice, this is generally picked up from your experiment tracking tool such as MLflow or DVC
+    export RUN_ID=xxx
+    export EXPERIMENT_ID=xxx
+
+Next, simply run:
+
+.. code-block:: console
+
+    $ ./scripts/deploy_manual.sh
+
+The details
+^^^^^^^^^^^
+
+The script *deploy_manual.sh* first copies the model folder from the s3 bucket you used
+for model training and registration to the staging environment s3 bucket. It then updates
+the variables necessary for the lambda function to connect to the model folder in the
+staging environment.
+
+.. note::
+
+    The manual deployment depends upon creation of the staging environment resources
+    created with Terraform. See :ref:`Cloud resource management with Terraform <Infrastructure>`
+    for infrastructure setup instructions.
 
 Monitoring
 ----------
 
 Model monitoring is performed on simulated streaming data by taking the data records
-labeled "simulate" in our feature_store, pinging a `prediction` service every 3 seconds
+labeled "simulate" in our feature_store, pinging a **prediction** service every 3 seconds
 (i.e., the current feature window size) to generate a model prediction, and finally
-pinging the `evidently` service to monitor performance. It requires a build with
-``docker-compose`` and a run of ``src.monitor.send_data.py`` to stream the data to the
-`prediction` and `evidently` services.
+pinging the **evidently** service to monitor performance. It requires a build with
+``docker-compose`` and a run of *src/monitor/send_data.py* to stream the data to the
+**prediction** and **evidently** services.
 
 `---`
 ~~~~~
@@ -766,7 +981,7 @@ pinging the `evidently` service to monitor performance. It requires a build with
 Quickstart
 ^^^^^^^^^^
 
-To start the `evidently` and `prediction` services, run one of the following to
+To start the **evidently** and **prediction** services, run one of the following to
 build and start the docker containers:
 
 .. code-block:: console
@@ -791,36 +1006,62 @@ Next, in another terminal start sending data to the services:
 The details
 ^^^^^^^^^^^
 
-The ``prepare.py`` script loads the simulation data from the database and stores it as
-a separate PARQUET file in `src/monitor` and `src/monitor/evidenctly_service/datasets`.
-There is an example model included in `src/monitor/prediction_service` in case one wants
+The *prepare.py* script loads the simulation data from the database and stores it as
+a separate PARQUET file in *src/monitor* and *src/monitor/evidenctly_service/datasets*.
+There is an example model included in *src/monitor/prediction_service* in case one wants
 to test the monitoring functionality without running through the rest of the pipeline
 (i.e., data processing, featurization, model training).
 
 .. note::
 
     If you would like to test your own model created during your run-through of the
-    pipeline, you must manually copy your `models` (or similarly saved model folder)
-    from your model registry/artifact store into `src/monitor/prediction_service/`. The
+    pipeline, you must manually copy your *models* (or similarly saved model folder)
+    from your model registry/artifact store into *src/monitor/prediction_service/*. The
     prediction services uses ``mlflow.pyfunc.load_model()`` under the hood, so the contents
-    of the `models` folder should conform to the requirements necessary for MLflow.
+    of the *models* folder should conform to the requirements necessary for MLflow.
     Alternatively, the prediction service is designed to connect to an S3 bucket if you'd
     prefer to load the model from S3. In order to do that, you must fill in the
-    `environment` variables ``MODEL_LOCATION``, ``AWS_ACCESS_KEY_ID``,
+    environment variables ``MODEL_LOCATION``, ``AWS_ACCESS_KEY_ID``,
     ``AWS_SECRET_ACCESS_KEY``, and ``AWS_DEFAULT_REGION`` in
-    `src/monitor/docker-compose.yml`, where ``MODEL_LOCATION`` is the full s3 path to
-    your `models` folder.
+    *src/monitor/docker-compose.yml*, where ``MODEL_LOCATION`` is the full s3 path to
+    your *models* folder.
 
-Infrastructure
---------------
-
-I use Terraform to manage cloud- and local resources. **CURRENTLY IN PROGRESS.**
+.. _Testing:
 
 Testing
 -------
 
-`---`
-~~~~~
+Quality checks
+~~~~~~~~~~~~~~
+
+Quality checks include:
+- Package import sorting with ``isort``
+- Code formatting with ``black``
+- Linting with ``pylint``
+- Static type checking ``mypy``
+- Security checking with ``bandit``
+
+Quickstart
+^^^^^^^^^^
+
+To perform the quality checks, simply run either:
+
+.. code-block:: console
+
+    (exercise_prediction) $ make quality_checks
+
+or
+
+.. code-block:: console
+
+	(exercise_prediction) $ isort --line-length=88 src
+	(exercise_prediction) $ black --line-length=88 src
+	(exercise_prediction) $ pylint -rn -sn --ignore-paths=tests,integration_tests src
+	(exercise_prediction) $ mypy --no-strict-optional --ignore-missing-imports --exclude "app.py" --exclude "^tests/" --exclude "^integration_tests/" src
+	(exercise_prediction) $ bandit -r -x tests,integration_tests src
+
+Unit tests
+~~~~~~~~~~
 
 Quickstart
 ^^^^^^^^^^
@@ -843,83 +1084,34 @@ The details
 
 The tests will likely not pass until the following criteria are met:
 
-1. The dataset is converted from a MATLAB file to a series of PARQUET files via: ``make data`` (this creates the `datafile_group_splits.json` file necessary for validation).
+1. The dataset is converted from a MATLAB file to a series of PARQUET files via: ``make data`` (this creates the *datafile_group_splits.json* file necessary for validation).
 2. The data is featurized via: ``make features`` (this provides the potentially system-specific ``FEATURIZE_ID`` for the featurization process).
-3. ``FEATURIZE_ID`` is added as an environment variable in ``.env``.
+3. ``FEATURIZE_ID`` is added as an environment variable in *.env*.
 
-Quality Checks
---------------
-
-Quality checks include:
-- Package import sorting with ``isort``
-- Code formatting with ``black``
-- Linting with ``pylint``
-- Static type checking ``mypy``
-- Security checking with ``bandit``
-
-`---`
-~~~~~
+Integration tests
+~~~~~~~~~~~~~~~~~
 
 Quickstart
 ^^^^^^^^^^
 
-To perform the quality checks, simply run either:
+To perform integration testing of the containerized streaming service using localstack,
+simply run:
 
 .. code-block:: console
 
-    (exercise_prediction) $ make quality_checks
-
-or
-
-.. code-block:: console
-
-	(exercise_prediction) $ isort --line-length=88 src
-	(exercise_prediction) $ black --line-length=88 src
-	(exercise_prediction) $ pylint -rn -sn --ignore-paths=tests,integration_tests src
-	(exercise_prediction) $ mypy --no-strict-optional --ignore-missing-imports --exclude "app.py" --exclude "^tests/" --exclude "^integration_tests/" src
-	(exercise_prediction) $ bandit -r -x tests,integration_tests src
-
-
-Publishing
-----------
-
-`---`
-~~~~~
-
-Quickstart
-^^^^^^^^^^
-
-For publishing the streaming service Docker container image you will first need to create
-an Amazon ECR repository:
-
-.. code-block:: console
-
-    (exercise_prediction) $ aws ecr create-repository --repository-name <repository_name>
-
-Next, set the following environment variables:
-
-.. code-block:: console
-
-    (exercise_prediction) $ export AWS_ACCOUNT_ID=<your_account_id>
-    (exercise_prediction) $ export AWS_DEFAULT_REGION=<your_default_region>
-    (exercise_prediction) $ export REPOSITORY=<repository_name>
-
-Finally, to actually publish the image, run:
-
-.. code-block:: console
-
-    (exercise_prediction) $ make publish
+    $ make integration_tests
 
 The details
 ^^^^^^^^^^^
 
-Running ``make publish`` automatically the following other commands:
+The ``make`` command runs *integration_tests/run.sh*, which performs the following steps:
 
-1. ``make quality_checks`` to run code quality checks,
-2. ``make code_tests`` to run unit tests with coverage reports,
-3. ``make build`` to build the docker image, and
-4. ``make integration_tests`` to test the streaming integration with localstack
+1. Check for a local image of the streaming service container, and build one if it doesn't exist
+2. Start the container and localstack to test the kinesis stream
+3. Create a predictions output stream
+4. Runs *integration_tests/test_docker.py* to test sending sample data to the service and checking the predicted response.
+5. Runs *integration_tests/test_kinesis.py* to read from the output stream and check it against expected value.
 
-If any of these previous commands fail, the image will not be pushed to the repository.
+If either of the tests fail, the logs are exported to the console.
 
 Fin.

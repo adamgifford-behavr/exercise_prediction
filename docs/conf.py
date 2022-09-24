@@ -13,7 +13,7 @@
 
 # import os
 # import sys
-from typing import Dict, List
+from typing import Dict
 
 # _ = os.getenv("FOO")
 # _ = getattr(sys, "last_value", None)
@@ -32,10 +32,10 @@ from typing import Dict, List
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions: List[str] = ["sphinx.ext.autosectionlabel"]
+# extensions: List[str] = ["sphinx.ext.autosectionlabel"]
 
 # Make sure the target is unique
-autosectionlabel_prefix_document = True  # pylint: disable=invalid-name
+# autosectionlabel_prefix_document = True  # pylint: disable=invalid-name
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
