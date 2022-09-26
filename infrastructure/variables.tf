@@ -30,7 +30,6 @@ variable "docker_image_local_path" {
 
 variable "ecr_repo_name" {
   description = ""
-  default     = "exercise_prediction_naive_feats_orch_cloud"
 }
 
 variable "lambda_function_name" {

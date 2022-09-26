@@ -27,3 +27,11 @@ variable "lambda_function_name" {
 variable "image_uri" {
   description = "ECR image uri"
 }
+
+variable "lambda_event_source_mapping_batch_size" {
+  description = "Lamdba maximum batch size"
+}
+
+variable "lambda_event_source_mapping_batch_window" {
+  description = "Lambda maximum batch window to buffer samples"
+}

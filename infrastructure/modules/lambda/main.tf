@@ -34,5 +34,6 @@ resource "aws_lambda_event_source_mapping" "kinesis_mapping" {
     aws_iam_role_policy_attachment.kinesis_processing
   ]
   // enabled           = var.lambda_event_source_mapping_enabled
-  // batch_size        = var.lambda_event_source_mapping_batch_size
+  batch_size                         = var.lambda_event_source_mapping_batch_size
+  maximum_batching_window_in_seconds = var.lambda_event_source_mapping_batch_window
 }
