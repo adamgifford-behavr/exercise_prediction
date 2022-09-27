@@ -57,24 +57,24 @@ setup:
 
 ## create staging infrastructure resources in AWS with Terraform
 create_stage_infra:
-	cd infrastructure ; \
-	terraform init ; \
+	cd infrastructure && \
+	terraform init && \
 	terraform apply -var-file=vars/stg.tfvars
 
 ## create production infrastructure resources in AWS with Terraform
 create_prod_infra:
-	cd infrastructure ; \
-	terraform init ; \
+	cd infrastructure && \
+	terraform init && \
 	terraform apply -var-file=vars/prod.tfvars
 
 ## destroy staging infrastructure resources in AWS with Terraform
 destroy_stage_infra:
-	cd infrastructure ; \
+	cd infrastructure && \
 	terraform destroy -var-file=vars/stg.tfvars
 
 ## destroy production infrastructure resources in AWS with Terraform
 destroy_prod_infra:
-	cd infrastructure ; \
+	cd infrastructure && \
 	terraform destroy -var-file=vars/prod.tfvars
 
 ## Make Dataset
@@ -105,22 +105,22 @@ stand_alone_train:
 orchestrate_train:
 ifeq (,$(TRAIN_SB))
 	@echo ">>> No cloud storage bucket defined. Using local storage"
-	cd src/orchestration ; \
+	cd src/orchestration && \
 	prefect deployment build \
 		orchestrate_train.py:train_flow \
 		-n 'Main Model-Training Flow' \
-		-q 'manual_training_flow' ; \
-	prefect deployment apply train_flow-deployment.yaml ; \
+		-q 'manual_training_flow' && \
+	prefect deployment apply train_flow-deployment.yaml && \
 	prefect agent start -q 'manual_training_flow'
 else
 	@echo ">>> Building with cloud storage"
-	cd src/orchestration ; \
+	cd src/orchestration && \
 	prefect deployment build \
 		orchestrate_train.py:train_flow \
 		-n 'Main Model-Training Flow' \
 		-q 'manual_training_flow' \
-		-sb $(TRAIN_SB) ; \
-	prefect deployment apply train_flow-deployment.yaml ; \
+		-sb $(TRAIN_SB) && \
+	prefect deployment apply train_flow-deployment.yaml && \
 	prefect agent start -q 'manual_training_flow'
 endif
 
@@ -132,59 +132,59 @@ stand_alone_score_batch:
 deploy_score_batch:
 ifeq (,$(TRAIN_SB))
 	@echo ">>> No cloud storage bucket defined. Using local storage"
-	cd src/deployment/batch ; \
+	cd src/deployment/batch && \
 	prefect deployment build \
 		orchestrate_score_batch.py:score_flow \
 		-n 'Main Model-Scoring Flow' \
-		-q 'manual_scoring_flow' ; \
-	prefect deployment apply score_flow-deployment.yaml ; \
+		-q 'manual_scoring_flow' && \
+	prefect deployment apply score_flow-deployment.yaml && \
 	prefect agent start -q 'manual_scoring_flow'
 else
 	@echo ">>> Building with cloud storage"
-	cd src/deployment/batch ; \
+	cd src/deployment/batch && \
 	prefect deployment build \
 		orchestrate_score_batch.py:score_flow \
 		-n 'Main Model-Scoring Flow' \
 		-q 'manual_scoring_flow' \
-		-sb $(SCORE_BATCH_SB) ; \
-	prefect deployment apply score_flow-deployment.yaml ; \
+		-sb $(SCORE_BATCH_SB) && \
+	prefect deployment apply score_flow-deployment.yaml && \
 	prefect agent start -q 'manual_scoring_flow'
 endif
 
 ## deploy web service locally
 deploy_web:
-	cp -R models src/deployment/web_service ; \
-	cd src/deployment/web_service ; \
-	docker build -t exercise-prediction-webservice:v1 . ; \
+	cp -R models src/deployment/web_service && \
+	cd src/deployment/web_service && \
+	docker build -t exercise-prediction-webservice:v1 . && \
 	if [ -f .env ]; then \
-		docker run -itd --rm -p 9696:9696 --env-file .env exercise-prediction-webservice:v1 ; \
+		docker run -itd --rm -p 9696:9696 --env-file .env exercise-prediction-webservice:v1 && \
 	else \
-		docker run -itd --rm -p 9696:9696 exercise-prediction-webservice:v1 ; \
+		docker run -itd --rm -p 9696:9696 exercise-prediction-webservice:v1 && \
 	fi ; \
-	echo ">>> pinging prediction service..." ; \
-	sleep 2 ; \
+	echo ">>> pinging prediction service..." && \
+	sleep 2 && \
 	python test.py
 
 ## deploy streaming container locally
 deploy_streaming:
-	cp -R models src/deployment/streaming ; \
-	cd src/deployment/streaming ; \
-	docker build -t exercise-prediction-streaming:v1 . ; \
+	cp -R models src/deployment/streaming && \
+	cd src/deployment/streaming && \
+	docker build -t exercise-prediction-streaming:v1 . && \
 	if [ -f .env ]; then \
-		docker run -itd --rm -p 8080:8080 --env-file .env exercise-prediction-streaming:v1 ; \
+		docker run -itd --rm -p 8080:8080 --env-file .env exercise-prediction-streaming:v1 && \
 	else \
-		docker run -itd --rm -p 8080:8080 exercise-prediction-streaming:v1 ; \
+		docker run -itd --rm -p 8080:8080 exercise-prediction-streaming:v1 && \
 	fi ; \
-	echo ">>> pinging streaming service..." ; \
-	sleep 2 ; \
+	echo ">>> pinging streaming service..." && \
+	sleep 2 && \
 	python test_docker.py
 
 ## simulate streaming monitoring service
 docker_monitor:
-	cp models -r src/monitor/prediction_service ; \
-	cd src/monitor ; \
-	python prepare.py ; \
-	docker-compose up ; \
+	cp models -r src/monitor/prediction_service && \
+	cd src/monitor && \
+	python prepare.py && \
+	docker-compose up && \
 
 ## code quality checks
 quality_checks:
@@ -205,7 +205,7 @@ build: code_tests
 
 ## run integration tests for streaming service
 integration_tests: build
-	cd integration_tests ; \
+	cd integration_tests && \
 	LOCAL_IMAGE_NAME=${LOCAL_IMAGE_NAME} bash run.sh
 
 publish: integration_tests
