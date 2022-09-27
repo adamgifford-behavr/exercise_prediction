@@ -27,6 +27,7 @@ scikit-learn = "==1.0.2"
 scipy = "*"
 sqlalchemy = "*"
 werkzeug = "*"
+requests = "*"
 
 [dev-packages]
 bandit = "*"
@@ -39,7 +40,6 @@ mypy = "*"
 nbdime = "*"
 pytest = "*"
 pylint = "*"
-requests = "*"
 sphinx = "*"
 pre-commit = "*"
 
