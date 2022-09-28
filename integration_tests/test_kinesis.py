@@ -41,7 +41,7 @@ pprint(actual_record)
 
 expected_record = {
     "model": "exercise_prediction_naive_feats_orch_cloud",
-    "version": "68bca43a7210449e89aa5ef9280c7fab",
+    "version": "85412c4643564a4f8a6b3d8f0130216a",
     "prediction": {
         "exercise": "Non-exercise",
         "id": "512_134_1_0.0_2.9999805304374165",

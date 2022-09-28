@@ -59,14 +59,16 @@ module "ecr_image" {
 }
 
 module "lambda_function" {
-  source               = "./modules/lambda"
-  image_uri            = module.ecr_image.image_uri
-  lambda_function_name = "${var.lambda_function_name}_${var.project_id}"
-  model_bucket         = module.s3_bucket.name
-  output_stream_name   = "${var.output_stream_name}-${var.project_id}"
-  output_stream_arn    = module.output_kinesis_stream.stream_arn
-  source_stream_name   = "${var.source_stream_name}-${var.project_id}"
-  source_stream_arn    = module.source_kinesis_stream.stream_arn
+  source                                   = "./modules/lambda"
+  image_uri                                = module.ecr_image.image_uri
+  lambda_function_name                     = "${var.lambda_function_name}_${var.project_id}"
+  model_bucket                             = module.s3_bucket.name
+  output_stream_name                       = "${var.output_stream_name}-${var.project_id}"
+  output_stream_arn                        = module.output_kinesis_stream.stream_arn
+  source_stream_name                       = "${var.source_stream_name}-${var.project_id}"
+  source_stream_arn                        = module.source_kinesis_stream.stream_arn
+  lambda_event_source_mapping_batch_size   = var.lambda_event_source_mapping_batch_size
+  lambda_event_source_mapping_batch_window = var.lambda_event_source_mapping_batch_size
 }
 
 # For CI/CD

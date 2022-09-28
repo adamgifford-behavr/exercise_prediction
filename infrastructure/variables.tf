@@ -35,3 +35,11 @@ variable "ecr_repo_name" {
 variable "lambda_function_name" {
   description = ""
 }
+
+variable "lambda_event_source_mapping_batch_size" {
+  description = "Lamdba maximum batch size"
+}
+
+variable "lambda_event_source_mapping_batch_window" {
+  description = "Lambda maximum batch window to buffer samples"
+}

@@ -1,0 +1,86 @@
+name: CI Tests
+
+on:
+  pull_request:
+    branches:
+      - 'develop'
+    paths:
+      - 'src/**'
+
+
+env:
+  AWS_DEFAULT_REGION: 'us-east-1'
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install pipenv && pipenv install --dev
+
+      - name: Package sorting
+        run: pipenv run isort --line-length=88 src
+
+      - name: Code styling
+        run: pipenv run black --line-length=88 src
+
+      - name: Lint
+        run: pipenv run pylint -rn -sn --ignore-paths=tests,integration_tests src
+
+      - name: Type hinting
+        run: |
+          pipenv run mypy --no-strict-optional \
+            --ignore-missing-imports \
+            --exclude "app.py" \
+            --exclude "^tests/" \
+            --exclude "^integration_tests/" \
+            src
+
+      - name: Security
+        run: pipenv run bandit -r -x tests,integration_tests src
+
+      - name: Run unit tests
+        run: |
+          pipenv run coverage run -m pytest tests/ --disable-warnings && \
+            pipenv run coverage html -d htmlcov --show-contexts --skip-empty
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      - name: Integration tests
+        working-directory: 'integration_tests'
+        run: |
+          . run.sh
+
+  tf-plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      - uses: hashicorp/setup-terraform@v2
+
+      - name: TF plan
+        id: plan
+        working-directory: 'infrastructure'
+        run: |
+          terraform init -backend-config="key=exercise-prediction-prod.tfstate" \
+            --reconfigure && terraform plan --var-file vars/prod.tfvars

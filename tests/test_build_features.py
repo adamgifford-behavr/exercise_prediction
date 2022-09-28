@@ -96,6 +96,9 @@ def read_json(file_path):
 
 ## src/features/build_features.py
 # featurize_id
+@pytest.mark.xfail(
+    reason="will not run on cloned repo w/o raw data, make data commands"
+)
 def test_generate_featurize_id():
     datafile_splits = read_json(PROJDIR / "src/features/datafile_group_splits.json")
     metaparams = read_json(PROJDIR / "src/features/metaparams.json")
@@ -119,6 +122,9 @@ def test_generate_featurize_id():
 # there are deprecation warnings internal to fastparquet for loading the data, ignore
 # for testing as these are not relevant
 @pytest.mark.filterwarnings("ignore::DeprecationWarning")
+@pytest.mark.xfail(
+    reason="will not run on cloned repo w/o raw data, make data commands"
+)
 def test_calculate_windowed_feats():
     featurize_id = os.getenv("FEATURIZE_ID")
     dataset_group = "train"
