@@ -25,9 +25,13 @@ aws --endpoint-url=http://localhost:4566 \
     --stream-name ${PREDICTIONS_STREAM_NAME} \
     --shard-count 1
 
-cd ../src/deployment/streaming/
-pipenv run python ../../../integration_tests/test_docker.py
-cd ../../../integration_tests/
+if [[ -z "${GITHUB_ACTIONS}" ]]; then
+    cd ../src/deployment/streaming/
+    pipenv run python ../../../integration_tests/test_docker.py
+    cd ../../../integration_tests/
+else
+    pipenv run python integration_tests/test_docker.py
+fi
 
 ERROR_CODE=$?
 
