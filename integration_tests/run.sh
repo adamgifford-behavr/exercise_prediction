@@ -42,9 +42,13 @@ if [ ${ERROR_CODE} != 0 ]; then
 fi
 
 
-cd ../src/deployment/streaming/
-pipenv run python ../../../integration_tests/test_kinesis.py
-cd ../../../integration_tests/
+if [[ -z "${GITHUB_ACTIONS}" ]]; then
+    cd ../src/deployment/streaming/
+    pipenv run python ../../../integration_tests/test_kinesis.py
+    cd ../../../integration_tests/
+else
+    pipenv run python test_kinesis.py
+fi
 
 ERROR_CODE=$?
 
