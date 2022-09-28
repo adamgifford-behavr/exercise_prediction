@@ -30,7 +30,7 @@ if [[ -z "${GITHUB_ACTIONS}" ]]; then
     pipenv run python ../../../integration_tests/test_docker.py
     cd ../../../integration_tests/
 else
-    pipenv run python integration_tests/test_docker.py
+    pipenv run python test_docker.py
 fi
 
 ERROR_CODE=$?
