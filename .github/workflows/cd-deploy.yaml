@@ -23,6 +23,11 @@ jobs:
         with:
           terraform_wrapper: false
 
+      # Add model to deploy directory for CD
+      - name: Copy model
+        id: copy-model
+        run: cp -r models src/streaming/deployment/
+
       # Define the infrastructure
       - name: TF plan
         id: tf-plan
