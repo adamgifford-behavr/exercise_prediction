@@ -107,3 +107,10 @@ jobs:
 
           aws lambda update-function-configuration --function-name $LAMBDA_FUNCTION \
                     --environment "Variables=${variables}"
+
+      # - name: TF Destroy
+      #   id: tf-destroy
+      #   working-directory: 'infrastructure'
+      #   if: ${{ steps.tf-plan.outcome }} == 'success'
+      #   run: |
+      #     terraform destroy -auto-approve -var-file=vars/prod.tfvars
