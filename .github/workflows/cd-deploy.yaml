@@ -26,7 +26,7 @@ jobs:
       # Add model to deploy directory for CD
       - name: Copy model
         id: copy-model
-        run: cp -r models src/streaming/deployment/
+        run: cp -r models src/deployment/streaming/
 
       # Define the infrastructure
       - name: TF plan
