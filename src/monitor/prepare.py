@@ -2,8 +2,6 @@
 This script prepares the data for the monitoring service by creating a dataframe of
 streaming data from the database table, then saving it as a parquet file, and copying the
 file to the evidently monitoring service directory.
-
-ADDING FOO TO TEST CICD.
 """
 import os
 from pathlib import Path
