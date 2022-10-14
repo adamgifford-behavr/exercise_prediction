@@ -83,4 +83,4 @@ jobs:
         working-directory: 'infrastructure'
         run: |
           terraform init -backend-config="key=exercise-prediction-prod.tfstate" \
-            --reconfigure && terraform plan --var-file vars/prod.tfvars
+            -reconfigure && terraform plan --var-file vars/prod.tfvars
