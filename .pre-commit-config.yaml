@@ -62,14 +62,14 @@ repos:
         language_version: python3
         types: [python]
         args: ["-x", "tests,integration_tests"]
-      # - id: pytest
-      #   name: pytest
-      #   entry: coverage run -m pytest tests
-      #   stages: [commit]
-      #   types: [python]
-      #   language: system
-      #   pass_filenames: false
-      #   always_run: false
+      - id: pytest
+        name: pytest
+        entry: coverage run -m pytest tests
+        stages: [commit]
+        types: [python]
+        language: system
+        pass_filenames: false
+        always_run: false
       - id: coverage
         name: coverage report
         entry: coverage html -d htmlcov --show-contexts --skip-empty
