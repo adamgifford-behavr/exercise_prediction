@@ -24,7 +24,7 @@ model_service = model.init(
 
 def lambda_handler(event: events.SQSEvent, context: context_.Context) -> dict:
     """
-    It takes an SQS event and returns a response
+    It takes an SQS event from AWS Kinesis and returns a response.
 
     Args:
       event (events.SQSEvent): event received from Amazon Kinesis

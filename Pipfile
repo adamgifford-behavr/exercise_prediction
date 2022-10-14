@@ -30,6 +30,7 @@ werkzeug = "*"
 
 [dev-packages]
 bandit = "*"
+black = "*"
 coverage = "*"
 deepdiff = "*"
 isort = "*"

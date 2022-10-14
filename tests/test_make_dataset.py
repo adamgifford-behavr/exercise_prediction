@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 
+import pytest
 from deepdiff import DeepDiff
 
 import src.data.make_dataset as md
@@ -19,6 +20,7 @@ def read_json(file_path):
 
 ## src/data/make_dataset.py
 # writing activity groupings json file
+@pytest.mark.xfail(reason="will not run on cloned repo w/o raw data download")
 def test_write_activity_groupings_json():
     input_filepath = PROJDIR / "data/raw/exercise_data.50.0000_multionly.mat"
     mat_contents = md._load_matfile(input_filepath)
@@ -43,6 +45,9 @@ def test_write_activity_groupings_json():
 
 
 # train test sim split
+@pytest.mark.xfail(
+    reason="will not run on cloned repo w/o raw data, make data commands"
+)
 def test_make_data_splits():
     interim_path = PROJDIR / "data/interim"
 
