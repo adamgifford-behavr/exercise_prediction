@@ -505,13 +505,12 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "exemplar": true,
-          "expr": "evidently:reference_dataset_hash",
+          "editorMode": "code",
+          "expr": "evidently:data_drift:value{dataset_name=\"${dataset_name:raw}\"}",
           "hide": false,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "reference_hash",
-          "refId": "B"
+          "legendFormat": "{{feature}}",
+          "range": true,
+          "refId": "C"
         }
       ],
       "title": "Feature Drift Score",
